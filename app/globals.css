@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ink text-ivory font-body antialiased;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-200;
+  }
+
+  .section-heading {
+    @apply font-display text-3xl md:text-[2.6rem] leading-[1.1] text-ivory;
+  }
+
+  .gold-line {
+    @apply h-px w-10 bg-gradient-to-r from-transparent via-gold-300 to-transparent;
+  }
+
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-gold-gradient bg-[length:200%_200%] px-7 py-3 text-sm font-semibold tracking-wide text-ink shadow-gold transition-all duration-300 hover:bg-right hover:shadow-lg;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-gold-400/50 px-7 py-3 text-sm font-semibold tracking-wide text-ivory transition-all duration-300 hover:border-gold-300 hover:bg-gold-400/10;
+  }
+
+  .card-panel {
+    @apply rounded-2xl border border-ink-line bg-ink-soft/60 backdrop-blur-sm;
+  }
+
+  .reveal {
+    opacity: 0;
+  }
+
+  .reveal.in-view {
+    animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+}
+
+::selection {
+  background: rgba(202, 161, 75, 0.35);
+  color: #f7f3ea;
+}
+
+/* Thin, gold-tinted scrollbar for a more considered feel */
+html {
+  scrollbar-width: thin;
+}
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #12100e;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a241c;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3226;
+}
+
+/* Hides the scrollbar on horizontal touch-scroll strips (category rail, carousels) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
