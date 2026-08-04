@@ -7,6 +7,7 @@ import BottleGlyph from "@/components/BottleGlyph";
 import TestimonialSection from "@/components/about/TestimonialSection";
 import StatCounter from "@/components/about/StatCounter";
 import { getFeaturedProducts } from "@/actions/products";
+import { getActiveTestimonials } from "@/actions/site";
 import { whatsappLink } from "@/lib/constants";
 import {
   Leaf,
@@ -33,8 +34,12 @@ const STATS = [
 ];
 
 export default async function AboutPage() {
-  const featuredProducts = await getFeaturedProducts(4);
+  const [featuredProducts, testimonials] = await Promise.all([
+    getFeaturedProducts(4),
+    getActiveTestimonials(),
+  ]);
   const storyImage = featuredProducts.find((p) => p.image)?.image || null;
+  const safeTestimonials = JSON.parse(JSON.stringify(testimonials));
 
   return (
     <>
@@ -341,7 +346,7 @@ export default async function AboutPage() {
         </section>
 
         {/* Testimonial Section */}
-        <TestimonialSection />
+        <TestimonialSection testimonials={safeTestimonials} />
 
         {/* Vision & Cruelty-Free */}
         <section className="py-16 sm:py-24 relative">
