@@ -35,7 +35,7 @@ export async function getProductForEdit(id) {
     .select(`
       *,
       product_images ( id, image_url, sort_order, variant_name ),
-      product_variants ( id, variant_name, price, original_price, stock_quantity, is_active ),
+      product_variants ( id, variant_name, bottle_type, price, original_price, stock_quantity, weight_grams, is_active ),
       product_faqs ( id, question, answer, display_order )
     `)
     .eq("id", id)
@@ -63,9 +63,11 @@ async function syncChildren(supabase, productId, { images, variants, faqs }) {
       variants.map((v) => ({
         product_id: productId,
         variant_name: v.variant_name,
+        bottle_type: v.bottle_type === "plastic" ? "plastic" : "glass",
         price: Number(v.price),
         original_price: v.original_price ? Number(v.original_price) : null,
         stock_quantity: Number(v.stock_quantity || 0),
+        weight_grams: v.weight_grams ? Number(v.weight_grams) : null,
         is_active: true,
       }))
     );

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import Reveal from "@/components/Reveal";
-import { whatsappLink } from "@/lib/constants";
 import { Sun, Moon, Sparkles, ChevronDown } from "lucide-react";
 
 const OPTION_ICONS = [Sun, Moon, Sparkles];
@@ -151,14 +151,12 @@ export default function HowToChoose({
                   {unsureText}
                 </p>
 
-                <a
-                  href={whatsappLink("Hi Amairah Perfumes, I'd like to place an order.")}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/shop"
                   className="relative mt-6 block w-full rounded-full border border-gold-400/40 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-gold-200 transition-all hover:border-gold-300 hover:bg-gold-400/5 sm:mt-7"
                 >
                   {unsureButton}
-                </a>
+                </Link>
               </div>
             </Reveal>
           </div>

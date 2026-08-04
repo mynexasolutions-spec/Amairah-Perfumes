@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ArrowLeft, Package, MapPin, CreditCard } from "lucide-react";
 import { getOrderById } from "@/actions/admin/orders";
 import OrderStatusManager from "./_components/OrderStatusManager";
+import DelhiveryShipmentManager from "./_components/DelhiveryShipmentManager";
 import BottleGlyph from "@/components/BottleGlyph";
 
 export const metadata = { title: "Order Detail" };
@@ -136,6 +137,19 @@ export default async function AdminOrderDetailPage({ params }) {
           <p className="mt-5 text-sm text-ivory/40">
             Payment method: <span className="text-ivory/70">{order.payment_method === "COD" ? "Cash on Delivery" : "Online (Razorpay)"}</span>
           </p>
+          {order.payment_method === "RAZORPAY" && (
+            <div className="mt-4 border-t border-gold-400/10 pt-4 space-y-2.5 text-xs">
+              <div>
+                <span className="block text-ivory/40 uppercase tracking-wider font-semibold">Razorpay Order ID</span>
+                <span className="font-mono text-ivory/80 select-all">{order.razorpay_order_id || "—"}</span>
+              </div>
+              <div>
+                <span className="block text-ivory/40 uppercase tracking-wider font-semibold">Razorpay Payment ID</span>
+                <span className="font-mono text-ivory/80 select-all">{order.razorpay_payment_id || "—"}</span>
+              </div>
+            </div>
+          )}
+          <DelhiveryShipmentManager order={order} />
         </div>
       </div>
     </div>

@@ -3,6 +3,14 @@
 import { unstable_cache } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+// A Razorpay order only counts as a real sale once the webhook (or the
+// post-payment verify call) has flipped it to "paid" — until then the
+// customer may still be in the checkout modal, or may have abandoned it.
+// COD has no online-payment step, so it's always real the moment it's placed.
+// (Kept as a local literal — this is duplicated from admin/orders.js since a
+// "use server" file may only export async functions.)
+const VISIBLE_ORDERS_FILTER = "payment_method.neq.RAZORPAY,payment_status.eq.paid";
+
 const getDashboardStatsCached = unstable_cache(
   async () => {
     const supabase = createAdminClient();
@@ -16,13 +24,14 @@ const getDashboardStatsCached = unstable_cache(
       { count: pendingReviewCount },
       { count: unresolvedInquiryCount },
     ] = await Promise.all([
-      supabase.from("orders").select("total_amount, payment_status, order_status", { count: "exact" }),
+      supabase.from("orders").select("total_amount, payment_status, order_status", { count: "exact" }).or(VISIBLE_ORDERS_FILTER),
       supabase.from("products").select("id", { count: "exact", head: true }),
       supabase.from("profiles").select("id", { count: "exact", head: true }),
       supabase.from("product_variants").select("id, variant_name, stock_quantity, products ( name )").lte("stock_quantity", 5).eq("is_active", true),
       supabase
         .from("orders")
         .select("id, order_number, total_amount, order_status, created_at")
+        .or(VISIBLE_ORDERS_FILTER)
         .order("created_at", { ascending: false })
         .limit(6),
       supabase.from("reviews").select("id", { count: "exact", head: true }).eq("is_approved", false),

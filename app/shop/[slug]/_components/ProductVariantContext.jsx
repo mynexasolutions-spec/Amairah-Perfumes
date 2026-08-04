@@ -9,8 +9,11 @@ import { createContext, useContext, useState } from "react";
 const ProductVariantContext = createContext(null);
 
 export function ProductVariantProvider({ variants, children }) {
-  const [selectedId, setSelectedId] = useState(variants?.[0]?.id ?? null);
-  const selected = variants?.find((v) => v.id === selectedId) || variants?.[0] || null;
+  // Glass is the default bottle shown up front; Plastic (where offered) is
+  // only ever an explicit alternate the shopper opts into on the page.
+  const defaultVariant = variants?.find((v) => (v.bottle_type || "glass") === "glass") || variants?.[0] || null;
+  const [selectedId, setSelectedId] = useState(defaultVariant?.id ?? null);
+  const selected = variants?.find((v) => v.id === selectedId) || defaultVariant;
 
   return (
     <ProductVariantContext.Provider value={{ selected, selectedId, setSelectedId }}>

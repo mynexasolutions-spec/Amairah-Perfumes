@@ -108,8 +108,8 @@ export default async function ProductDetailPage({ params }) {
                 </span>
               </div>
 
-              {product.short_description && (
-                <p className="mt-6 text-base sm:text-lg leading-relaxed text-ivory/65 font-light">{product.short_description}</p>
+              {product.description && (
+                <p className="mt-6 text-base sm:text-lg leading-relaxed text-ivory/65 font-light whitespace-pre-wrap">{product.description}</p>
               )}
 
               <div className="mt-8 border-t border-ink-line pt-8">
@@ -156,14 +156,14 @@ export default async function ProductDetailPage({ params }) {
           </div>
 
           {/* Product Description Section (Full Width) */}
-          {product.description && (
+          {product.short_description && (
             <Reveal className="mt-14 sm:mt-24 border-t border-ink-line pt-10 sm:pt-16 max-w-4xl">
               <p className="eyebrow">
                 <span className="gold-line" /> The Story
               </p>
               <h2 className="font-display text-2xl sm:text-3xl font-light text-ivory mt-4 mb-6">Product Details</h2>
-              <p className="whitespace-pre-wrap text-base sm:text-lg leading-relaxed text-ivory/60 font-light">
-                {product.description}
+              <p className="text-base sm:text-lg leading-relaxed text-ivory/60 font-light">
+                {product.short_description}
               </p>
             </Reveal>
           )}

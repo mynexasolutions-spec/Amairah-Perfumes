@@ -5,6 +5,24 @@ import { createContext, useContext, useEffect, useState } from "react";
 const CartContext = createContext(undefined);
 const STORAGE_KEY = "amairah-cart";
 
+// Merges any entries that share a variantId (e.g. from stale carts saved
+// before add-to-cart de-duplication existed) so React list keys stay unique.
+function dedupeCart(items) {
+  if (!Array.isArray(items)) return [];
+  const merged = [];
+  const indexByVariantId = new Map();
+  for (const item of items) {
+    const existingIndex = indexByVariantId.get(item.variantId);
+    if (existingIndex === undefined) {
+      indexByVariantId.set(item.variantId, merged.length);
+      merged.push({ ...item });
+    } else {
+      merged[existingIndex].quantity += item.quantity;
+    }
+  }
+  return merged;
+}
+
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -13,7 +31,7 @@ export function CartProvider({ children }) {
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (saved) setCart(JSON.parse(saved));
+      if (saved) setCart(dedupeCart(JSON.parse(saved)));
     } catch (e) {
       // ignore corrupt cart data
     }

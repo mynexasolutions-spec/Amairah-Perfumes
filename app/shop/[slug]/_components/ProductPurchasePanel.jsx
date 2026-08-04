@@ -11,14 +11,15 @@ import { useProductVariant } from "./ProductVariantContext";
 export default function ProductPurchasePanel({ product, variants }) {
   const router = useRouter();
   const ctx = useProductVariant();
-  const [localSelectedId, setLocalSelectedId] = useState(variants[0]?.id);
+  const defaultVariant = variants.find((v) => (v.bottle_type || "glass") === "glass") || variants[0];
+  const [localSelectedId, setLocalSelectedId] = useState(defaultVariant?.id);
   const selectedId = ctx ? ctx.selectedId : localSelectedId;
   const setSelectedId = ctx ? ctx.setSelectedId : setLocalSelectedId;
   const [quantity, setQuantity] = useState(1);
   const { addToCart, setDrawerOpen } = useCart();
   const { showToast } = useToast();
 
-  const selected = variants.find((v) => v.id === selectedId) || variants[0];
+  const selected = variants.find((v) => v.id === selectedId) || defaultVariant;
   const inStock = selected && selected.stock_quantity > 0;
 
   if (!variants || variants.length === 0) {
@@ -29,12 +30,29 @@ export default function ProductPurchasePanel({ product, variants }) {
     );
   }
 
+  // One "Select Size" button per distinct size name; a size that has both a
+  // Glass and a Plastic variant additionally shows a bottle-type toggle,
+  // defaulting to Glass, with Plastic offered at its own (lower) price.
+  const sizeNames = [...new Set(variants.map((v) => v.variant_name))];
+  const variantsForSelectedSize = variants.filter((v) => v.variant_name === selected.variant_name);
+
+  const selectSize = (sizeName) => {
+    const optionsForSize = variants.filter((v) => v.variant_name === sizeName);
+    const glass = optionsForSize.find((v) => (v.bottle_type || "glass") === "glass");
+    setSelectedId((glass || optionsForSize[0]).id);
+  };
+
+  const selectBottleType = (bottleType) => {
+    const match = variantsForSelectedSize.find((v) => (v.bottle_type || "glass") === bottleType);
+    if (match) setSelectedId(match.id);
+  };
+
   const buildCartItem = () => ({
     variantId: selected.id,
     productId: product.id,
     slug: product.slug,
     name: product.name,
-    variantName: selected.variant_name,
+    variantName: `${selected.variant_name} (${selected.bottle_type === "plastic" ? "Plastic" : "Glass"} Bottle)`,
     price: selected.price,
     image: product.images?.[0]?.image_url || product.featured_image_url || null,
   });
@@ -42,7 +60,7 @@ export default function ProductPurchasePanel({ product, variants }) {
   const handleAdd = () => {
     if (!selected || !inStock) return;
     addToCart(buildCartItem(), quantity);
-    showToast(`${product.name} (${selected.variant_name}) added to your bag.`);
+    showToast(`${product.name} (${buildCartItem().variantName}) added to your bag.`);
     setDrawerOpen(true);
   };
 
@@ -79,23 +97,58 @@ export default function ProductPurchasePanel({ product, variants }) {
           Select Size
         </p>
         <div className="flex flex-wrap gap-2">
-          {variants.map((v) => (
-            <button
-              key={v.id}
-              disabled={v.stock_quantity <= 0}
-              onClick={() => setSelectedId(v.id)}
-              className={`flex items-center gap-1.5 rounded-2xl border px-5 py-2.5 text-sm sm:text-base transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-20 ${
-                selectedId === v.id
-                  ? "bg-gold-gradient text-ink border-transparent font-semibold shadow-gold/20 scale-[1.02]"
-                  : "border-ink-line bg-ink-soft/40 text-ivory/60 hover:border-gold-400/30 hover:text-ivory"
-              }`}
-            >
-              {selectedId === v.id && <Check className="h-3.5 w-3.5" />}
-              {v.variant_name}
-            </button>
-          ))}
+          {sizeNames.map((name) => {
+            const optionsForSize = variants.filter((v) => v.variant_name === name);
+            const sizeInStock = optionsForSize.some((v) => v.stock_quantity > 0);
+            const isSelected = selected.variant_name === name;
+            return (
+              <button
+                key={name}
+                disabled={!sizeInStock}
+                onClick={() => selectSize(name)}
+                className={`flex items-center gap-1.5 rounded-2xl border px-5 py-2.5 text-sm sm:text-base transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-20 ${
+                  isSelected
+                    ? "bg-gold-gradient text-ink border-transparent font-semibold shadow-gold/20 scale-[1.02]"
+                    : "border-ink-line bg-ink-soft/40 text-ivory/60 hover:border-gold-400/30 hover:text-ivory"
+                }`}
+              >
+                {isSelected && <Check className="h-3.5 w-3.5" />}
+                {name}
+              </button>
+            );
+          })}
         </div>
         {!inStock && <p className="mt-3 text-sm text-red-400 font-semibold">This size is out of stock.</p>}
+      </div>
+
+      {/* Bottle type — always shown for the selected size; just one button
+          (Glass, already selected) when no Plastic alternative exists for it */}
+      <div>
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-300">
+          Bottle Type
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {variantsForSelectedSize.map((v) => {
+            const bottleType = v.bottle_type || "glass";
+            const isSelected = selected.id === v.id;
+            return (
+              <button
+                key={v.id}
+                disabled={v.stock_quantity <= 0}
+                onClick={() => selectBottleType(bottleType)}
+                className={`flex items-center gap-1.5 rounded-2xl border px-5 py-2.5 text-sm sm:text-base transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-20 ${
+                  isSelected
+                    ? "bg-gold-gradient text-ink border-transparent font-semibold shadow-gold/20 scale-[1.02]"
+                    : "border-ink-line bg-ink-soft/40 text-ivory/60 hover:border-gold-400/30 hover:text-ivory"
+                }`}
+              >
+                {isSelected && <Check className="h-3.5 w-3.5" />}
+                {bottleType === "plastic" ? "Plastic Bottle" : "Glass Bottle"}
+                <span className="text-xs opacity-70">₹{v.price.toLocaleString("en-IN")}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Quantity Selector */}
@@ -138,7 +191,7 @@ export default function ProductPurchasePanel({ product, variants }) {
       {/* WhatsApp Link */}
       <a
         href={whatsappLink(
-          `Hi Amairah Perfumes, I'd like to order ${product.name} (${selected.variant_name}).`
+          `Hi Amairah Perfumes, I'd like to order ${product.name} (${buildCartItem().variantName}).`
         )}
         target="_blank"
         rel="noopener noreferrer"

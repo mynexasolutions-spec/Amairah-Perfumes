@@ -23,8 +23,7 @@ export default async function Footer() {
               <Image src="/navbar-logo.png" alt="Amairah Perfumes" width={210} height={140} className="h-16 w-auto object-contain" />
             </Link>
             <p className="mt-5 max-w-sm text-base leading-relaxed text-ivory/55">
-              Hand-poured attars and fine fragrances, blended in small batches for depth and
-              longevity. No shortcuts, no fillers — just oils worth wearing.
+              We believe great fragrances should be enjoyed by everyone. Every bottle is carefully blended using premium ingredients to deliver quality at an affordable price.
             </p>
             <div className="mt-6 flex items-center gap-3">
               <a

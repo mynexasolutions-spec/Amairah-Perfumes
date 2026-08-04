@@ -5,6 +5,7 @@ import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import { createClient } from "@/lib/supabase/server";
+import DelhiveryTracking from "./_components/DelhiveryTracking";
 
 export const metadata = { title: "Order Details" };
 
@@ -26,7 +27,7 @@ export default async function OrderDetailPage({ params }) {
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "id, order_number, subtotal, shipping_cost, discount_amount, coupon_discount, quantity_discount, coupon_code, total_amount, payment_method, payment_status, order_status, created_at, order_items ( id, product_name, variant_name, quantity, line_total ), addresses ( full_name, phone, address_line_1, address_line_2, city, state, postal_code )"
+      "id, order_number, subtotal, shipping_cost, discount_amount, coupon_discount, quantity_discount, coupon_code, total_amount, payment_method, payment_status, order_status, created_at, tracking_number, courier_name, shipment_status, tracking_url, order_items ( id, product_name, variant_name, quantity, line_total ), addresses ( full_name, phone, address_line_1, address_line_2, city, state, postal_code )"
     )
     .eq("id", id)
     .eq("user_id", user.id)
@@ -135,6 +136,17 @@ export default async function OrderDetailPage({ params }) {
                 </div>
               </div>
             </Reveal>
+
+            {/* Shipment Tracking */}
+            {order.tracking_number && (
+              <DelhiveryTracking
+                orderId={order.id}
+                trackingNumber={order.tracking_number}
+                trackingUrl={order.tracking_url}
+                courierName={order.courier_name}
+                cachedStatus={order.shipment_status}
+              />
+            )}
 
             {/* Shipping Address */}
             {address && (

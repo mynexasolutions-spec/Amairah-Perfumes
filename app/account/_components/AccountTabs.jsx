@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Package, User, Mail, Phone, ChevronRight } from "lucide-react";
+import { Package, User, Mail, Phone, ChevronRight, Truck, ExternalLink } from "lucide-react";
 
 const STATUS_STYLES = {
   pending: "text-ivory/60 bg-ivory/5 border-ivory/10",
@@ -120,6 +120,33 @@ export default function AccountTabs({ profile, orders }) {
                       </li>
                     ))}
                   </ul>
+
+                  {order.tracking_number && (
+                    <div className="mt-4 flex items-center gap-3 rounded-2xl border border-gold-400/20 bg-gradient-to-r from-gold-400/10 via-gold-300/5 to-transparent px-4 py-3">
+                      <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold-gradient shadow-gold">
+                        <Truck className="h-4 w-4 text-ink" />
+                        {order.order_status !== "delivered" && (
+                          <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
+                        )}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-300/80">
+                          {order.courier_name || "Delhivery"} · {order.order_status === "delivered" ? "Delivered" : "On the way"}
+                        </p>
+                        <p className="truncate font-mono text-sm text-ivory">{order.tracking_number}</p>
+                      </div>
+                      <a
+                        href={order.tracking_url || `https://www.delhivery.com/track/package/${order.tracking_number}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-gold-400/25 bg-gold-400/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-gold-200 transition-all duration-300 hover:border-gold-300/50 hover:bg-gold-400/20"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" /> Track
+                      </a>
+                    </div>
+                  )}
+
                   <div className="mt-4 flex justify-end border-t border-ink-line pt-4">
                     <Link
                       href={`/account/orders/${order.id}`}

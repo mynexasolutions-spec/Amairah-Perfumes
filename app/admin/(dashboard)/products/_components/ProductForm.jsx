@@ -34,8 +34,8 @@ export default function ProductForm({ product, categories }) {
   );
   const [variants, setVariants] = useState(
     product?.product_variants?.length
-      ? product.product_variants.map((v) => ({ ...v, price: String(v.price), original_price: v.original_price ? String(v.original_price) : "", stock_quantity: String(v.stock_quantity) }))
-      : [{ variant_name: "", price: "", original_price: "", stock_quantity: "" }]
+      ? product.product_variants.map((v) => ({ ...v, bottle_type: v.bottle_type === "plastic" ? "plastic" : "glass", price: String(v.price), original_price: v.original_price ? String(v.original_price) : "", stock_quantity: String(v.stock_quantity) }))
+      : [{ variant_name: "", bottle_type: "glass", price: "", original_price: "", stock_quantity: "" }]
   );
   const [faqs, setFaqs] = useState(product?.product_faqs?.map((f) => ({ question: f.question, answer: f.answer })) || []);
   const [showVariantErrors, setShowVariantErrors] = useState(false);

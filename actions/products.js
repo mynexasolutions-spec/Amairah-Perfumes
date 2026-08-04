@@ -7,7 +7,7 @@ const LISTING_SELECT = `
   id, name, slug, badge, gender, average_rating, review_count,
   featured_image_url, category_id, is_featured, short_description,
   product_images ( image_url, sort_order, variant_name ),
-  product_variants ( id, variant_name, price, original_price, stock_quantity, is_active )
+  product_variants ( id, variant_name, bottle_type, price, original_price, stock_quantity, is_active )
 `;
 
 const MOCK_PRODUCTS = [
@@ -117,7 +117,11 @@ const MOCK_PRODUCTS = [
 
 function withDisplayPrice(product) {
   const activeVariants = (product.product_variants || []).filter((v) => v.is_active);
-  const cheapest = activeVariants.sort((a, b) => a.price - b.price)[0];
+  // Glass is the default bottle shown storefront-wide (listing cards,
+  // quick-add) — Plastic is only ever an explicit alternate on the product
+  // page, so it must never surface here even when it's the cheaper option.
+  const glassVariants = activeVariants.filter((v) => (v.bottle_type || "glass") === "glass");
+  const cheapest = (glassVariants.length > 0 ? glassVariants : activeVariants).sort((a, b) => a.price - b.price)[0];
   const image =
     product.featured_image_url ||
     [...(product.product_images || [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.image_url ||
@@ -137,7 +141,9 @@ function withDisplayPrice(product) {
     price: cheapest?.price ?? null,
     oldPrice: cheapest?.original_price ?? null,
     variantId: cheapest?.id ?? null,
-    variantName: cheapest?.variant_name ?? null,
+    // Always Glass here (see filter above), so label it explicitly to match
+    // the product page's cart item naming.
+    variantName: cheapest ? `${cheapest.variant_name} (Glass Bottle)` : null,
     inStock: activeVariants.some((v) => v.stock_quantity > 0),
   };
 }
@@ -150,7 +156,10 @@ export async function getProducts(filters = {}) {
     if (filters.categoryId) query = query.eq("category_id", filters.categoryId);
     if (filters.gender) query = query.eq("gender", filters.gender);
     if (filters.badgeContains) query = query.ilike("badge", `%${filters.badgeContains}%`);
-    if (filters.search) query = query.ilike("name", `%${filters.search}%`);
+    if (filters.search) {
+      const term = `%${filters.search}%`;
+      query = query.or(`name.ilike.${term},description.ilike.${term},short_description.ilike.${term},notes_top.ilike.${term},notes_middle.ilike.${term},notes_base.ilike.${term}`);
+    }
 
     query = query.order("created_at", { ascending: false });
     if (filters.limit) query = query.limit(filters.limit);
@@ -172,11 +181,7 @@ export async function getProducts(filters = {}) {
     console.error("Fetch products error:", err);
   }
 
-  // Fallback if DB is empty
-  let products = [...MOCK_PRODUCTS];
-  if (filters.gender) products = products.filter((p) => p.gender === filters.gender);
-  if (filters.search) products = products.filter((p) => p.name.toLowerCase().includes(filters.search.toLowerCase()));
-  return products;
+  return [];
 }
 
 export async function getFeaturedProducts(limit = 4) {
@@ -195,7 +200,7 @@ export async function getFeaturedProducts(limit = 4) {
     console.error("Fetch featured products error:", err);
   }
 
-  return MOCK_PRODUCTS.slice(0, limit);
+  return [];
 }
 
 export async function getRelatedProducts(categoryId, excludeId, limit = 4) {
@@ -232,8 +237,7 @@ export async function getRelatedProducts(categoryId, excludeId, limit = 4) {
     console.error("Fetch related products error:", err);
   }
 
-  // DB unreachable/empty (e.g. local dev without Supabase configured) — last resort only.
-  return MOCK_PRODUCTS.filter((p) => p.id !== excludeId).slice(0, limit);
+  return [];
 }
 
 export async function getProductBySlug(slug) {
@@ -246,7 +250,7 @@ export async function getProductBySlug(slug) {
         average_rating, review_count, short_description, description,
         notes_top, notes_middle, notes_base, featured_image_url,
         product_images ( id, image_url, sort_order, variant_name ),
-        product_variants ( id, variant_name, price, original_price, stock_quantity, is_active ),
+        product_variants ( id, variant_name, bottle_type, price, original_price, stock_quantity, is_active ),
         product_faqs ( id, question, answer, display_order )
       `)
       .eq("slug", slug)
@@ -311,24 +315,5 @@ export async function getProductBySlug(slug) {
     console.error("Fetch product by slug error:", err);
   }
 
-  // Fallback for mock products
-  const mock = MOCK_PRODUCTS.find((p) => p.slug === slug);
-  if (!mock) return null;
-  return {
-    ...mock,
-    short_description: "An exquisite fragrance, hand-blended for rich sillage and long-lasting elegance.",
-    description: "Formulated at high concentration using fine perfumery ingredients.",
-    notes_top: "Bergamot, Saffron, Cardamom",
-    notes_middle: "Rose Absolute, Amber, Jasmine",
-    notes_base: "Aged Sandalwood, Pure Musk, Oud Accord",
-    categoryName: mock.concentration,
-    images: [],
-    faqs: [
-      { id: "f1", question: "How long does this scent last?", answer: "Up to 12-14 hours on living skin." }
-    ],
-    variants: [
-      { id: mock.variantId, variant_name: mock.variantName, price: mock.price, original_price: mock.oldPrice, stock_quantity: 10, is_active: true }
-    ],
-    reviews: [],
-  };
+  return null;
 }
