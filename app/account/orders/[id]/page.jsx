@@ -27,7 +27,7 @@ export default async function OrderDetailPage({ params }) {
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "id, order_number, subtotal, shipping_cost, discount_amount, coupon_discount, quantity_discount, coupon_code, total_amount, payment_method, payment_status, order_status, created_at, tracking_number, courier_name, shipment_status, tracking_url, order_items ( id, product_name, variant_name, quantity, line_total ), addresses ( full_name, phone, address_line_1, address_line_2, city, state, postal_code )"
+      "id, order_number, subtotal, shipping_cost, discount_amount, coupon_discount, quantity_discount, coupon_code, total_amount, payment_method, payment_status, order_status, created_at, razorpay_payment_id, tracking_number, courier_name, shipment_status, tracking_url, order_items ( id, product_name, variant_name, quantity, line_total ), addresses ( full_name, phone, address_line_1, address_line_2, city, state, postal_code )"
     )
     .eq("id", id)
     .eq("user_id", user.id)
@@ -198,6 +198,12 @@ export default async function OrderDetailPage({ params }) {
                   {order.payment_status}
                 </span>
               </div>
+              {order.payment_method === "RAZORPAY" && order.razorpay_payment_id && (
+                <div className="mt-4 border-t border-gold-400/10 pt-4">
+                  <span className="block text-xs font-semibold uppercase tracking-wider text-ivory/40">Payment ID</span>
+                  <span className="font-mono text-sm text-ivory/70 select-all">{order.razorpay_payment_id}</span>
+                </div>
+              )}
             </Reveal>
           </div>
         </div>

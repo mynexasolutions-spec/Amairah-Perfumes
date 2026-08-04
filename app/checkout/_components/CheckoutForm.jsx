@@ -126,7 +126,7 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
     }
 
     clearCart();
-    setConfirmedOrder(result.orderNumber);
+    setConfirmedOrder({ orderNumber: result.orderNumber });
   };
 
   const openRazorpay = (result) => {
@@ -152,7 +152,7 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
         );
         if (verify.success) {
           clearCart();
-          setConfirmedOrder(result.orderNumber);
+          setConfirmedOrder({ orderNumber: result.orderNumber, paymentId: verify.razorpayPaymentId });
         } else {
           showToast(verify.error || "Payment verification failed.", "error");
         }
@@ -183,8 +183,13 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
           </h2>
           <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-gold-400/60 to-transparent" />
           <p className="mt-8 text-base sm:text-xl text-ivory/60 font-light max-w-xl mx-auto leading-relaxed">
-            Your order <span className="font-semibold text-gold-300">{confirmedOrder}</span> has been placed successfully.
+            Your order <span className="font-semibold text-gold-300">{confirmedOrder.orderNumber}</span> has been placed successfully.
           </p>
+          {confirmedOrder.paymentId && (
+            <p className="mt-3 text-sm text-ivory/40">
+              Payment ID: <span className="font-mono text-ivory/60 select-all">{confirmedOrder.paymentId}</span>
+            </p>
+          )}
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link href="/shop" className="btn-gold inline-flex w-full sm:w-fit px-10 py-4 text-sm font-semibold tracking-wide hover:scale-[1.02] transition-transform">
               Continue Shopping

@@ -246,7 +246,7 @@ export async function verifyRazorpayPayment(razorpayPaymentId, razorpayOrderId, 
 
   await decrementStock(admin, items || []);
 
-  return { success: true };
+  return { success: true, razorpayPaymentId };
 }
 
 async function decrementStock(client, items) {
