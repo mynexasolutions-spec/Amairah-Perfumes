@@ -16,7 +16,7 @@ export function ProductVariantProvider({ variants, children }) {
   const selected = variants?.find((v) => v.id === selectedId) || defaultVariant;
 
   return (
-    <ProductVariantContext.Provider value={{ selected, selectedId, setSelectedId }}>
+    <ProductVariantContext.Provider value={{ selected, selectedId, setSelectedId, variants }}>
       {children}
     </ProductVariantContext.Provider>
   );

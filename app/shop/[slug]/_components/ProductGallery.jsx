@@ -7,24 +7,47 @@ import { ZoomIn, X } from "lucide-react";
 import BottleGlyph from "@/components/BottleGlyph";
 import { useProductVariant } from "./ProductVariantContext";
 
-export default function ProductGallery({ images, name }) {
+export default function ProductGallery({ images, name, featuredImage }) {
   const ctx = useProductVariant();
   const selectedSizeName = ctx?.selected?.variant_name || null;
+  const selectedBottleType = ctx?.selected?.bottle_type === "plastic" ? "plastic" : "glass";
+  const selectedKey = selectedSizeName ? `${selectedSizeName}|${selectedBottleType}` : null;
+  const sizeHasOneType = selectedSizeName
+    ? new Set(
+        (ctx?.variants || [])
+          .filter((v) => (v.variant_name || "").trim() === selectedSizeName)
+          .map((v) => (v.bottle_type === "plastic" ? "plastic" : "glass"))
+      ).size === 1
+    : false;
 
-  // "General" images (variant_name is null) show for every size; sized
-  // images only show once a shopper picks that size. Fall back to the full
-  // set if nothing matches so the gallery is never empty.
-  const sizeFiltered = (images || []).filter(
-    (img) => !img.variant_name || img.variant_name === selectedSizeName
-  );
-  const list = sizeFiltered.length > 0 ? sizeFiltered : images && images.length > 0 ? images : [{ id: "placeholder", image_url: null }];
+  // "General" images (variant_name is null) show for every size+type combo;
+  // images tagged with a compound "size|type" key only show once a shopper
+  // picks that exact combo. Images saved before bottle-type-aware mapping
+  // existed carry a bare size (no "|") — those only auto-match when this
+  // size has just one bottle type, so the same legacy image can never show
+  // for both a size's Glass and Plastic variant.
+  const sizeFiltered = (images || []).filter((img) => {
+    if (!img.variant_name) return true;
+    if (img.variant_name === selectedKey) return true;
+    if (img.variant_name.includes("|")) return false;
+    return sizeHasOneType && img.variant_name === selectedSizeName;
+  });
+  // Never fall back to the full, unfiltered gallery — that would mix in
+  // images uploaded for a different size/bottle-type. Instead fall back to
+  // the single product-level featured image, or a placeholder.
+  const list =
+    sizeFiltered.length > 0
+      ? sizeFiltered
+      : featuredImage
+        ? [{ id: "featured", image_url: featuredImage }]
+        : [{ id: "placeholder", image_url: null }];
 
   const [active, setActive] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     setActive(0);
-  }, [selectedSizeName]);
+  }, [ctx?.selected?.id]);
 
   const activeImage = list[active]?.image_url;
 
