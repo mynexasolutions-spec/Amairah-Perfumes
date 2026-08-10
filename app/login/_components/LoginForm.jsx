@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import { login } from "@/actions/auth";
-import { whatsappLink } from "@/lib/constants";
 import BottleGlyph from "@/components/BottleGlyph";
 
 const inputClass =
@@ -71,14 +70,12 @@ export default function LoginForm() {
         </div>
 
         <div className="flex justify-end pt-1">
-          <a
-            href={whatsappLink("Hi Amairah Perfumes, I forgot my account password and need help.")}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/forgot-password"
             className="text-sm text-ivory/40 hover:text-gold-300 transition-colors duration-300"
           >
             Forgot password?
-          </a>
+          </Link>
         </div>
 
         {/* Submit Button */}
