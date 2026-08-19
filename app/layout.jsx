@@ -6,6 +6,7 @@ import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import CartDrawer from "@/components/CartDrawer";
 import { BRAND } from "@/lib/constants";
 import { getQuantityDiscountSettings } from "@/actions/admin/quantityDiscount";
+import Script from "next/script";
 
 const display = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -40,6 +41,21 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-3B35X4N265"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-3B35X4N265');
+          `}
+        </Script>
+      </head>
       <body>
         <ToastProvider>
           <CartProvider>
