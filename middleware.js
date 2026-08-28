@@ -2,6 +2,14 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 
 export async function middleware(request) {
+  const { pathname } = request.nextUrl;
+  const isAdminPath = pathname.startsWith("/admin") && pathname !== "/admin/login";
+  const isAccountPath = pathname.startsWith("/account") || pathname.startsWith("/checkout");
+
+  if (!isAdminPath && !isAccountPath) {
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -27,10 +35,6 @@ export async function middleware(request) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
-  const isAdminPath = pathname.startsWith("/admin") && pathname !== "/admin/login";
-  const isAccountPath = pathname.startsWith("/account") || pathname.startsWith("/checkout");
-
   if (isAdminPath && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
@@ -45,13 +49,22 @@ export async function middleware(request) {
   }
 
   if (isAdminPath && user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, full_name")
-      .eq("id", user.id)
-      .maybeSingle();
+    let role = user.user_metadata?.role;
+    let fullName = user.user_metadata?.full_name;
 
-    if (profile?.role !== "admin") {
+    // Fallback to database query if metadata is missing
+    if (!role) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role, full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      
+      role = profile?.role;
+      fullName = profile?.full_name;
+    }
+
+    if (role !== "admin") {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";
       return NextResponse.redirect(url);
@@ -60,7 +73,7 @@ export async function middleware(request) {
     // Pass identity through so the admin layout doesn't have to re-verify
     // the session with another Supabase round trip. Encoded since header
     // values must be ASCII-safe and full_name may contain other characters.
-    response.headers.set("x-admin-name", encodeURIComponent(profile.full_name || "Admin"));
+    response.headers.set("x-admin-name", encodeURIComponent(fullName || "Admin"));
   }
 
   return response;
