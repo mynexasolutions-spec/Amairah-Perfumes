@@ -3,8 +3,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import crypto from "crypto";
 import { sendBrevoEmail, otpEmailHtml, resetPasswordEmailHtml } from "@/lib/brevo";
+import { createAdminSessionToken, COOKIE_NAME as ADMIN_COOKIE_NAME, MAX_AGE_SECONDS as ADMIN_COOKIE_MAX_AGE } from "@/lib/adminSession";
 
 function safeRedirect(target) {
   return target && target.startsWith("/") ? target : "/";
@@ -196,8 +198,23 @@ export async function resetPassword(_prevState, formData) {
   return { success: true };
 }
 
+async function setAdminSessionCookie(email) {
+  const cookieStore = await cookies();
+  cookieStore.set(ADMIN_COOKIE_NAME, await createAdminSessionToken(email), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: ADMIN_COOKIE_MAX_AGE,
+    path: "/",
+  });
+}
+
+// Supabase Auth (GoTrue) has been hanging for minutes at a time on this
+// project, so admin login no longer goes through it at all — it checks
+// straight against ADMIN_EMAIL/ADMIN_PASSWORD and issues our own signed
+// cookie (lib/adminSession.js). middleware.js verifies that same cookie on
+// every /admin request instead of calling supabase.auth.getUser().
 export async function adminLogin(_prevState, formData) {
-  const supabase = await createClient();
   const email = formData.get("email");
   const password = formData.get("password");
 
@@ -207,42 +224,13 @@ export async function adminLogin(_prevState, formData) {
 
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPassword = process.env.ADMIN_PASSWORD;
+  const isValid = adminEmail && adminPassword && email.toLowerCase() === adminEmail.toLowerCase() && password === adminPassword;
 
-  let { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-  // First-ever login with the configured admin credentials bootstraps the account.
-  if (error && adminEmail && email.toLowerCase() === adminEmail.toLowerCase() && password === adminPassword) {
-    const { createAdminClient } = await import("@/lib/supabase/admin");
-    const adminClient = createAdminClient();
-    const { error: createError } = await adminClient.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { full_name: "Admin", role: "admin" },
-    });
-
-    if (!createError) {
-      const retry = await supabase.auth.signInWithPassword({ email, password });
-      data = retry.data;
-      error = retry.error;
-    }
+  if (!isValid) {
+    return { error: "Invalid credentials." };
   }
 
-  if (error || !data?.user) {
-    return { error: error?.message || "Invalid credentials." };
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", data.user.id)
-    .maybeSingle();
-
-  if (profile?.role !== "admin") {
-    await supabase.auth.signOut();
-    return { error: "This account does not have admin access." };
-  }
-
+  await setAdminSessionCookie(email);
   revalidatePath("/admin", "layout");
   redirect("/admin");
 }
@@ -255,8 +243,8 @@ export async function logout() {
 }
 
 export async function adminLogout() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  const cookieStore = await cookies();
+  cookieStore.delete(ADMIN_COOKIE_NAME);
   revalidatePath("/admin", "layout");
   redirect("/admin/login");
 }

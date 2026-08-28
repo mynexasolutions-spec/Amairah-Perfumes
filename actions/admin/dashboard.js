@@ -63,3 +63,30 @@ const getDashboardStatsCached = unstable_cache(
 export async function getDashboardStats() {
   return getDashboardStatsCached();
 }
+
+// Lean, separately-cached counts for the sidebar's nav badges — avoids
+// running the full 7-query dashboard stats fetch just to show 3 numbers.
+const getSidebarBadgeCountsCached = unstable_cache(
+  async () => {
+    const supabase = createAdminClient();
+
+    const [{ count: pendingOrders }, { count: pendingReviewCount }, { count: unresolvedInquiryCount }] =
+      await Promise.all([
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("order_status", "pending"),
+        supabase.from("reviews").select("id", { count: "exact", head: true }).eq("is_approved", false),
+        supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("is_resolved", false),
+      ]);
+
+    return {
+      pendingOrders: pendingOrders || 0,
+      pendingReviewCount: pendingReviewCount || 0,
+      unresolvedInquiryCount: unresolvedInquiryCount || 0,
+    };
+  },
+  ["admin-sidebar-badges"],
+  { revalidate: 30, tags: ["dashboard-stats"] }
+);
+
+export async function getSidebarBadgeCounts() {
+  return getSidebarBadgeCountsCached();
+}

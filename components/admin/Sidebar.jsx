@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   FolderTree,
@@ -24,6 +25,7 @@ import {
 } from "lucide-react";
 import { useAdminSidebar } from "@/context/AdminSidebarContext";
 import { adminLogout } from "@/actions/auth";
+import { getSidebarBadgeCounts } from "@/actions/admin/dashboard";
 
 const NAV_GROUPS = [
   {
@@ -66,10 +68,28 @@ const NAV_GROUPS = [
   },
 ];
 
-export default function AdminSidebar({ adminName = "Admin", badges = {} }) {
+export default function AdminSidebar({ adminName = "Admin" }) {
   const pathname = usePathname();
   const { mobileOpen, setMobileOpen } = useAdminSidebar();
   const initial = adminName.trim().charAt(0).toUpperCase();
+
+  // Fetched client-side (not awaited in the layout) so nav badge counts
+  // never block a page's initial render — they just pop in a beat later.
+  const [badges, setBadges] = useState({});
+  useEffect(() => {
+    let cancelled = false;
+    getSidebarBadgeCounts().then((counts) => {
+      if (cancelled) return;
+      setBadges({
+        "/admin/orders": counts.pendingOrders,
+        "/admin/reviews": counts.pendingReviewCount,
+        "/admin/inquiries": counts.unresolvedInquiryCount,
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <>

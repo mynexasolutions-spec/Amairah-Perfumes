@@ -1,12 +1,28 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
+import { verifyAdminSessionToken, COOKIE_NAME as ADMIN_COOKIE_NAME } from "@/lib/adminSession";
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const isAdminPath = pathname.startsWith("/admin") && pathname !== "/admin/login";
   const isAccountPath = pathname.startsWith("/account") || pathname.startsWith("/checkout");
 
-  if (!isAdminPath && !isAccountPath) {
+  // Admin auth no longer touches Supabase at all — Supabase Auth (GoTrue)
+  // was hanging for minutes at a time on this project. adminLogin (actions/auth.js)
+  // issues a self-signed cookie instead; this just verifies it.
+  if (isAdminPath) {
+    const adminSession = await verifyAdminSessionToken(request.cookies.get(ADMIN_COOKIE_NAME)?.value);
+    if (!adminSession) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/login";
+      return NextResponse.redirect(url);
+    }
+    const response = NextResponse.next({ request });
+    response.headers.set("x-admin-name", encodeURIComponent("Admin"));
+    return response;
+  }
+
+  if (!isAccountPath) {
     return NextResponse.next({ request });
   }
 
@@ -35,45 +51,11 @@ export async function middleware(request) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (isAdminPath && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin/login";
-    return NextResponse.redirect(url);
-  }
-
-  if (isAccountPath && !user) {
+  if (!user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirect", pathname);
     return NextResponse.redirect(url);
-  }
-
-  if (isAdminPath && user) {
-    let role = user.user_metadata?.role;
-    let fullName = user.user_metadata?.full_name;
-
-    // Fallback to database query if metadata is missing
-    if (!role) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role, full_name")
-        .eq("id", user.id)
-        .maybeSingle();
-      
-      role = profile?.role;
-      fullName = profile?.full_name;
-    }
-
-    if (role !== "admin") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/admin/login";
-      return NextResponse.redirect(url);
-    }
-
-    // Pass identity through so the admin layout doesn't have to re-verify
-    // the session with another Supabase round trip. Encoded since header
-    // values must be ASCII-safe and full_name may contain other characters.
-    response.headers.set("x-admin-name", encodeURIComponent(fullName || "Admin"));
   }
 
   return response;

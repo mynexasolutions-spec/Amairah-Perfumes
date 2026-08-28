@@ -2,7 +2,6 @@ import { headers } from "next/headers";
 import { AdminSidebarProvider } from "@/context/AdminSidebarContext";
 import AdminSidebar from "@/components/admin/Sidebar";
 import AdminHeader from "@/components/admin/Header";
-import { getDashboardStats } from "@/actions/admin/dashboard";
 
 export const metadata = { title: { template: "%s — Amairah Admin", default: "Admin Dashboard" } };
 
@@ -13,18 +12,14 @@ export default async function AdminDashboardLayout({ children }) {
   const encodedName = headerList.get("x-admin-name");
   const adminName = encodedName ? decodeURIComponent(encodedName) : "Admin";
 
-  // Cached (30s) — cheap to reuse here for the sidebar's nav badges.
-  const stats = await getDashboardStats();
-  const badges = {
-    "/admin/orders": stats.pendingOrders,
-    "/admin/reviews": stats.pendingReviewCount,
-    "/admin/inquiries": stats.unresolvedInquiryCount,
-  };
+  // Badge counts are fetched client-side by the sidebar itself (see
+  // Sidebar.jsx) instead of being awaited here — they're non-critical nav
+  // decoration and shouldn't block every admin page's initial render.
 
   return (
     <AdminSidebarProvider>
       <div className="flex h-screen overflow-hidden bg-ink">
-        <AdminSidebar adminName={adminName} badges={badges} />
+        <AdminSidebar adminName={adminName} />
         <div className="flex h-screen flex-1 flex-col overflow-hidden lg:pl-0">
           <AdminHeader adminName={adminName} />
           <main className="relative flex-1 overflow-y-auto p-4 md:p-8">
