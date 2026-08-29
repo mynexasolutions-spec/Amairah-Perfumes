@@ -14,10 +14,10 @@ export default function ProductGallery({ images, name, featuredImage }) {
   const selectedKey = selectedSizeName ? `${selectedSizeName}|${selectedBottleType}` : null;
   const sizeHasOneType = selectedSizeName
     ? new Set(
-        (ctx?.variants || [])
-          .filter((v) => (v.variant_name || "").trim() === selectedSizeName)
-          .map((v) => (v.bottle_type === "plastic" ? "plastic" : "glass"))
-      ).size === 1
+      (ctx?.variants || [])
+        .filter((v) => (v.variant_name || "").trim() === selectedSizeName)
+        .map((v) => (v.bottle_type === "plastic" ? "plastic" : "glass"))
+    ).size === 1
     : false;
 
   // "General" images (variant_name is null) show for every size+type combo;
@@ -103,11 +103,10 @@ export default function ProductGallery({ images, name, featuredImage }) {
             <button
               key={img.id}
               onClick={() => setActive(i)}
-              className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border transition-all duration-300 ${
-                active === i
+              className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border transition-all duration-300 ${active === i
                   ? "border-gold-300 ring-2 ring-gold-400/20 scale-95 shadow-[0_0_20px_rgba(212,163,89,0.25)] bg-gold-400/5"
                   : "border-ink-line bg-ink-soft/40 opacity-70 hover:opacity-100 hover:border-gold-400/25 hover:-translate-y-0.5"
-              }`}
+                }`}
             >
               {img.image_url && (
                 <Image src={img.image_url} alt="" fill sizes="64px" className="rounded-xl object-cover p-1.5" />
@@ -130,7 +129,7 @@ export default function ProductGallery({ images, name, featuredImage }) {
               type="button"
               onClick={() => setLightboxOpen(false)}
               aria-label="Close"
-              className="group absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-full border border-gold-400/20 bg-ink-soft/80 text-ivory/70 backdrop-blur-sm transition-all hover:border-gold-300/40 hover:text-gold-200"
+              className="group absolute right-5 top-5 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-gold-400/20 bg-ink-soft/80 text-ivory/70 backdrop-blur-sm transition-all hover:border-gold-300/40 hover:text-gold-200"
             >
               <X className="h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
             </button>

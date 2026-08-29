@@ -13,7 +13,7 @@ const inputClass =
 
 export default function RegisterForm() {
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/";
+  const redirectTo = searchParams.get("redirect") || "/account";
   const [showPassword, setShowPassword] = useState(false);
 
   const [step, setStep] = useState("details");

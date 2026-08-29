@@ -3,9 +3,9 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import { login } from "@/actions/auth";
-import BottleGlyph from "@/components/BottleGlyph";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
 
 const inputClass =
@@ -13,7 +13,7 @@ const inputClass =
 
 export default function LoginForm() {
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/";
+  const redirectTo = searchParams.get("redirect") || "/account";
   const oauthError = searchParams.get("error") === "google";
   const [state, formAction, pending] = useActionState(login, {});
   const [showPassword, setShowPassword] = useState(false);
@@ -26,8 +26,14 @@ export default function LoginForm() {
       <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-400/5 blur-3xl" />
       <div className="pointer-events-none absolute -left-10 -bottom-10 h-40 w-40 rounded-full bg-gold-300/5 blur-3xl" />
 
-      <div className="relative mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-gold-400/20 bg-gold-400/5 shadow-[0_0_25px_rgba(212,163,89,0.12)]">
-        <BottleGlyph className="h-7 w-7 text-gold-300/80" />
+      <div className="relative mx-auto mb-6 h-20 w-20 overflow-hidden rounded-full border border-gold-400/20 bg-ink p-2 shadow-2xl">
+        <Image
+          src="/logo.png"
+          alt="Amairah Perfumes"
+          width={80}
+          height={80}
+          className="h-full w-full object-contain"
+        />
       </div>
 
       <span className="eyebrow relative flex justify-center text-[11px] font-semibold uppercase tracking-widest text-gold-300">
@@ -53,13 +59,13 @@ export default function LoginForm() {
 
         {/* Email Input */}
         <div className="relative group">
-          <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gold-400/40 group-focus-within:text-gold-300 transition-colors duration-300" />
+          <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gold-300/80 group-focus-within:text-gold-200 transition-colors duration-300" />
           <input required name="email" type="email" placeholder="Email Address" className={inputClass} />
         </div>
 
         {/* Password Input */}
         <div className="relative group">
-          <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gold-400/40 group-focus-within:text-gold-300 transition-colors duration-300" />
+          <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gold-300/80 group-focus-within:text-gold-200 transition-colors duration-300" />
           <input
             required
             name="password"
@@ -71,7 +77,7 @@ export default function LoginForm() {
             type="button"
             onClick={() => setShowPassword((v) => !v)}
             aria-label={showPassword ? "Hide password" : "Show password"}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-gold-400/40 hover:text-gold-300 transition-colors p-1"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gold-300/70 hover:text-gold-200 transition-colors p-1"
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
@@ -80,7 +86,7 @@ export default function LoginForm() {
         <div className="flex justify-end pt-1">
           <Link
             href="/forgot-password"
-            className="text-sm text-ivory/40 hover:text-gold-300 transition-colors duration-300"
+            className="text-sm text-gold-300/80 hover:text-gold-200 font-medium transition-colors duration-300"
           >
             Forgot password?
           </Link>

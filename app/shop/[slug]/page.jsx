@@ -50,7 +50,7 @@ export default async function ProductDetailPage({ params }) {
     <>
       <SiteHeader />
       <main className="min-h-screen bg-[#0b0a0a] text-ivory overflow-hidden pb-16 sm:pb-24 pt-6 sm:pt-10">
-        
+
         {/* Ambient background glows */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gold-500/5 blur-[120px] animate-pulse" />
@@ -78,15 +78,15 @@ export default async function ProductDetailPage({ params }) {
           </div>
 
           <div className="grid grid-cols-1 gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 lg:items-start">
-          <ProductVariantProvider variants={safeProduct.variants}>
+            <ProductVariantProvider variants={safeProduct.variants}>
 
-            {/* Gallery Panel — sticks in place while purchase details scroll on desktop */}
-            <Reveal className="lg:sticky lg:top-[104px] lg:self-start">
-              <ProductGallery images={safeProduct.images} name={safeProduct.name} featuredImage={safeProduct.featured_image_url} />
-            </Reveal>
+              {/* Gallery Panel — sticks in place while purchase details scroll on desktop */}
+              <Reveal className="lg:sticky lg:top-[104px] lg:self-start">
+                <ProductGallery images={safeProduct.images} name={safeProduct.name} featuredImage={safeProduct.featured_image_url} />
+              </Reveal>
 
-            {/* Purchase Options */}
-            <Reveal delay={100} className="flex flex-col">
+              {/* Purchase Options */}
+              <Reveal delay={100} className="flex flex-col">
               {product.gender && (
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold-400/20 bg-ink-soft/80 text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-200 backdrop-blur-md mb-4 w-fit">
                   <Sparkles className="w-3.5 h-3.5 text-gold-300 animate-pulse" />
@@ -94,65 +94,65 @@ export default async function ProductDetailPage({ params }) {
                 </span>
               )}
 
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-light text-ivory leading-[1.08]">
-                {product.name}
-              </h1>
-              <div className="mt-5 h-px w-16 bg-gradient-to-r from-gold-400/60 to-transparent" />
+                <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-light text-ivory leading-[1.08]">
+                  {product.name}
+                </h1>
+                <div className="mt-5 h-px w-16 bg-gradient-to-r from-gold-400/60 to-transparent" />
 
-              <div className="mt-4 flex items-center gap-2.5">
-                <StarRating rating={product.review_count > 0 ? product.average_rating : 0} showValue />
-                <span className="text-sm text-ivory/40 font-medium">
-                  {product.review_count > 0
-                    ? `(${product.review_count} Customer review${product.review_count === 1 ? "" : "s"})`
-                    : "No reviews yet"}
-                </span>
-              </div>
-
-              {product.description && (
-                <p className="mt-6 text-base sm:text-lg leading-relaxed text-ivory/65 font-light whitespace-pre-wrap">{product.description}</p>
-              )}
-
-              <div className="mt-8 border-t border-ink-line pt-8">
-                <ProductPurchasePanel product={safeProduct} variants={safeProduct.variants} />
-              </div>
-
-              {/* Olfactory Scent Pyramid Section */}
-              {notes.length > 0 && (
-                <div className="mt-10 sm:mt-12 border-t border-ink-line pt-6 sm:pt-8">
-                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-300 block mb-5">
-                    Olfactory Composition
+                <div className="mt-4 flex items-center gap-2.5">
+                  <StarRating rating={product.review_count > 0 ? product.average_rating : 0} showValue />
+                  <span className="text-sm text-ivory/40 font-medium">
+                    {product.review_count > 0
+                      ? `(${product.review_count} Customer review${product.review_count === 1 ? "" : "s"})`
+                      : "No reviews yet"}
                   </span>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {notes.map((n, i) => {
-                      const NoteIcon = n.icon;
-                      return (
-                        <div
-                          key={n.label}
-                          className="group relative rounded-2xl border border-ink-line bg-ink-soft/30 p-5 sm:p-6 hover:border-gold-400/35 hover:bg-ink-soft/60 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_0_30px_rgba(212,163,89,0.08)] overflow-hidden"
-                        >
-                          <div className="absolute inset-0 bg-gold-gradient opacity-0 group-hover:opacity-[0.02] transition-opacity duration-300 pointer-events-none" />
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gold-400/20 bg-gold-400/5 text-gold-300 shadow-[0_0_15px_rgba(212,163,89,0.08)] transition-all duration-300 group-hover:scale-110 group-hover:border-gold-300/50 group-hover:text-gold-200 group-hover:shadow-[0_0_20px_rgba(212,163,89,0.2)]">
-                              <NoteIcon className="w-5 h-5" strokeWidth={1.5} />
+                </div>
+
+                {product.description && (
+                  <p className="mt-6 text-base sm:text-lg leading-relaxed text-ivory/65 font-light whitespace-pre-wrap">{product.description}</p>
+                )}
+
+                <div className="mt-8 border-t border-ink-line pt-8">
+                  <ProductPurchasePanel product={safeProduct} variants={safeProduct.variants} />
+                </div>
+
+                {/* Olfactory Scent Pyramid Section */}
+                {notes.length > 0 && (
+                  <div className="mt-10 sm:mt-12 border-t border-ink-line pt-6 sm:pt-8">
+                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-300 block mb-5">
+                      Olfactory Composition
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {notes.map((n, i) => {
+                        const NoteIcon = n.icon;
+                        return (
+                          <div
+                            key={n.label}
+                            className="group relative rounded-2xl border border-ink-line bg-ink-soft/30 p-5 sm:p-6 hover:border-gold-400/35 hover:bg-ink-soft/60 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_0_30px_rgba(212,163,89,0.08)] overflow-hidden"
+                          >
+                            <div className="absolute inset-0 bg-gold-gradient opacity-0 group-hover:opacity-[0.02] transition-opacity duration-300 pointer-events-none" />
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gold-400/20 bg-gold-400/5 text-gold-300 shadow-[0_0_15px_rgba(212,163,89,0.08)] transition-all duration-300 group-hover:scale-110 group-hover:border-gold-300/50 group-hover:text-gold-200 group-hover:shadow-[0_0_20px_rgba(212,163,89,0.2)]">
+                                <NoteIcon className="w-5 h-5" strokeWidth={1.5} />
+                              </div>
+                              <p className="text-sm font-semibold uppercase tracking-widest text-gold-200">
+                                {n.label}
+                              </p>
                             </div>
-                            <p className="text-sm font-semibold uppercase tracking-widest text-gold-200">
-                              {n.label}
+                            <p className="text-lg sm:text-xl text-ivory font-medium leading-snug">
+                              {n.value}
+                            </p>
+                            <p className="text-sm text-ivory/45 font-light mt-2 leading-relaxed">
+                              {n.desc}
                             </p>
                           </div>
-                          <p className="text-lg sm:text-xl text-ivory font-medium leading-snug">
-                            {n.value}
-                          </p>
-                          <p className="text-sm text-ivory/45 font-light mt-2 leading-relaxed">
-                            {n.desc}
-                          </p>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
-            </Reveal>
-          </ProductVariantProvider>
+                )}
+              </Reveal>
+            </ProductVariantProvider>
           </div>
 
           {/* Product Description Section (Full Width) */}

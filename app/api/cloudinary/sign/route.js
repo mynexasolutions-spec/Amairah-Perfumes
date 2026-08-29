@@ -1,20 +1,40 @@
 import { v2 as cloudinary } from "cloudinary";
 import { createClient } from "@/lib/supabase/server";
 
+import { cookies } from "next/headers";
+import { verifyAdminSessionToken, COOKIE_NAME as ADMIN_COOKIE_NAME } from "@/lib/adminSession";
+
 export async function POST(request) {
   // Only signed-in admins may request an upload signature.
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let isAuthorizedAdmin = false;
 
-  if (!user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  // 1. Check custom admin session cookie first
+  const cookieStore = await cookies();
+  const adminToken = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+  if (adminToken) {
+    const adminSession = await verifyAdminSessionToken(adminToken);
+    if (adminSession) {
+      isAuthorizedAdmin = true;
+    }
   }
 
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profile?.role !== "admin") {
-    return Response.json({ error: "Forbidden" }, { status: 403 });
+  // 2. Fallback to Supabase auth
+  if (!isAuthorizedAdmin) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+      if (profile?.role === "admin") {
+        isAuthorizedAdmin = true;
+      }
+    }
+  }
+
+  if (!isAuthorizedAdmin) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await request.json();

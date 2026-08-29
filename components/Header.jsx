@@ -33,13 +33,17 @@ function AnnouncementBar({ message }) {
   );
 }
 
-export default function Header({ categories = [], announcement, isLoggedIn = false }) {
+export default function Header({ categories = [], announcement, isLoggedIn = false, bundleEnabled = false }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { cartCount, setDrawerOpen } = useCart();
   const pathname = usePathname();
   const router = useRouter();
+
+  const navLinks = bundleEnabled
+    ? [...STATIC_LINKS.slice(0, 2), { label: "Build a Bundle", href: "/bundle" }, ...STATIC_LINKS.slice(2)]
+    : STATIC_LINKS;
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -75,7 +79,7 @@ export default function Header({ categories = [], announcement, isLoggedIn = fal
 
         {/* Center Links (Desktop) */}
         <nav className="hidden items-center gap-8 md:flex">
-          {STATIC_LINKS.map((link) => {
+          {navLinks.map((link) => {
             const isActive = pathname === link.href;
 
             if (link.label === "Shop") {
@@ -275,7 +279,7 @@ export default function Header({ categories = [], announcement, isLoggedIn = fal
           </div>
 
           <nav className="flex flex-col gap-2 px-6 py-6 overflow-y-auto max-h-[80vh]">
-            {STATIC_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

@@ -18,6 +18,7 @@ import {
   Tag,
   Truck,
   Layers,
+  PackagePlus,
   UserCog,
   Settings,
   X,
@@ -37,6 +38,7 @@ const NAV_GROUPS = [
     items: [
       { label: "Categories", href: "/admin/categories", icon: FolderTree },
       { label: "Products", href: "/admin/products", icon: Package },
+      { label: "Bundle Builder", href: "/admin/bundle", icon: PackagePlus },
     ],
   },
   {

@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, Link as LinkIcon, Minus, Plus, Send, Share2, ShoppingBag, Truck, MessageSquare, Check, X, Zap } from "lucide-react";
-import { FaFacebookF, FaInstagram, FaTwitter, FaWhatsapp } from "react-icons/fa";
+import { Eye, Minus, Plus, ShoppingBag, Truck, MessageSquare, Check, Zap } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import { whatsappLink } from "@/lib/constants";
 import { useProductVariant } from "./ProductVariantContext";
+import ShareButton from "./ShareButton";
+import PincodeChecker from "./PincodeChecker";
 
 function getEstimatedDeliveryDate() {
   const date = new Date();
@@ -33,19 +34,14 @@ export default function ProductPurchasePanel({ product, variants }) {
   const [quantity, setQuantity] = useState(1);
   const [viewerCount, setViewerCount] = useState(null);
   const [deliveryDate, setDeliveryDate] = useState("");
-  const [productUrl, setProductUrl] = useState("");
-  const [shareOpen, setShareOpen] = useState(false);
   const { addToCart, setDrawerOpen } = useCart();
-  const { showToast } = useToast();
 
   const selected = variants.find((v) => v.id === selectedId) || defaultVariant;
   const inStock = selected && selected.stock_quantity > 0;
-  const shareText = `Check out ${product.name} by Amairah Perfumes`;
 
   useEffect(() => {
     setViewerCount(getViewerCount());
     setDeliveryDate(getEstimatedDeliveryDate());
-    setProductUrl(window.location.href);
   }, []);
 
   if (!variants || variants.length === 0) {
@@ -58,35 +54,53 @@ export default function ProductPurchasePanel({ product, variants }) {
 
   // One "Select Size" button per distinct size name; a size that has both a
   // Glass and a Plastic variant additionally shows a bottle-type toggle,
-  // defaulting to Glass, with Plastic offered at its own (lower) price.
-  const sizeNames = [...new Set(variants.map((v) => v.variant_name))];
-  const variantsForSelectedSize = variants.filter((v) => v.variant_name === selected.variant_name);
+  const sizeNames = Array.from(new Set(variants.map((v) => v.variant_name)));
 
-  const selectSize = (sizeName) => {
-    const optionsForSize = variants.filter((v) => v.variant_name === sizeName);
-    const glass = optionsForSize.find((v) => (v.bottle_type || "glass") === "glass");
-    setSelectedId((glass || optionsForSize[0]).id);
+  const selectSize = (name) => {
+    // Try to keep same bottle type if possible, otherwise first available for that size
+    const currentBottleType = selected.bottle_type || "glass";
+    const match = variants.find(
+      (v) => v.variant_name === name && (v.bottle_type || "glass") === currentBottleType && v.stock_quantity > 0
+    );
+    if (match) {
+      setSelectedId(match.id);
+    } else {
+      const firstAvailable = variants.find((v) => v.variant_name === name && v.stock_quantity > 0);
+      if (firstAvailable) {
+        setSelectedId(firstAvailable.id);
+      } else {
+        const any = variants.find((v) => v.variant_name === name);
+        if (any) setSelectedId(any.id);
+      }
+    }
   };
 
-  const selectBottleType = (bottleType) => {
-    const match = variantsForSelectedSize.find((v) => (v.bottle_type || "glass") === bottleType);
-    if (match) setSelectedId(match.id);
+  const selectBottleType = (type) => {
+    const match = variants.find(
+      (v) => v.variant_name === selected.variant_name && (v.bottle_type || "glass") === type
+    );
+    if (match) {
+      setSelectedId(match.id);
+    }
   };
+
+  const variantsForSelectedSize = variants.filter(
+    (v) => v.variant_name === selected.variant_name
+  );
 
   const buildCartItem = () => ({
-    variantId: selected.id,
+    id: selected.id,
     productId: product.id,
-    slug: product.slug,
     name: product.name,
-    variantName: `${selected.variant_name} (${selected.bottle_type === "plastic" ? "Plastic" : "Glass"} Bottle)`,
+    variantName: `${selected.variant_name} (${selected.bottle_type === "plastic" ? "Plastic" : "Glass"})`,
     price: selected.price,
-    image: product.images?.[0]?.image_url || product.featured_image_url || null,
+    image: selected.image_url || product.featured_image_url || product.images?.[0] || "/placeholder.jpg",
+    slug: product.slug,
   });
 
   const handleAdd = () => {
     if (!selected || !inStock) return;
     addToCart(buildCartItem(), quantity);
-    showToast(`${product.name} (${buildCartItem().variantName}) added to your bag.`);
     setDrawerOpen(true);
   };
 
@@ -95,36 +109,6 @@ export default function ProductPurchasePanel({ product, variants }) {
     addToCart(buildCartItem(), quantity);
     setDrawerOpen(false);
     router.push("/checkout");
-  };
-
-  const copyProductLink = async () => {
-    if (!productUrl) return;
-    await navigator.clipboard.writeText(productUrl);
-    showToast("Product link copied.");
-  };
-
-  const shareNative = async () => {
-    if (!productUrl) return;
-    if (!navigator.share) {
-      await copyProductLink();
-      return;
-    }
-    try {
-      await navigator.share({
-        title: product.name,
-        text: shareText,
-        url: productUrl,
-      });
-    } catch (error) {
-      if (error?.name !== "AbortError") {
-        await copyProductLink();
-      }
-    }
-  };
-
-  const shareOnInstagram = async () => {
-    await copyProductLink();
-    window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -262,123 +246,21 @@ export default function ProductPurchasePanel({ product, variants }) {
           <Zap className="h-4 w-4 text-gold-300" /> Buy Now
         </button>
       </div>
-
-      <div className="flex flex-wrap items-start gap-3">
-        <div className="relative z-[1000]">
-          <div className="w-fit max-w-full rounded-2xl border border-gold-400/10 bg-ink-soft/30 px-4 py-2">
-            <button
-              type="button"
-              onClick={() => setShareOpen((open) => !open)}
-              className="inline-flex items-center justify-center gap-2 text-sm font-semibold uppercase leading-none tracking-widest text-ivory/70 transition-colors hover:text-gold-200"
-            >
-              <Share2 className="h-4.5 w-4.5 text-gold-300" />
-              <span>Share</span>
-            </button>
-          </div>
-
-          {shareOpen && (
-            <>
-              <button
-                type="button"
-                aria-label="Close share popup"
-                className="fixed inset-0 z-20 cursor-default bg-black/70 backdrop-blur-sm"
-                onClick={() => setShareOpen(false)}
-              />
-              <div className="absolute left-0 top-0 z-30 w-[min(22rem,calc(100vw-3rem))] overflow-hidden rounded-[1.35rem] border border-gold-400/20 bg-[#100d0b] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.65),0_0_28px_rgba(212,163,89,0.08)]">
-                <div className="absolute inset-x-0 top-0 h-px bg-gold-gradient" />
-                <div className="flex items-center justify-between gap-4">
-                  <h3 className="font-display text-xl font-semibold text-ivory">
-                    Share Product
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => setShareOpen(false)}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold-400/10 bg-ink-soft/70 text-ivory/50 transition-colors hover:text-gold-200"
-                    aria-label="Close share popup"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-
-                <div className="my-4 h-px bg-ink-line" />
-
-                <p className="text-sm font-medium text-ivory/65">Share this link via</p>
-
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`${shareText}: ${productUrl}`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex h-12 w-12 items-center justify-center rounded-full border border-emerald-500/25 bg-emerald-500/10 text-emerald-300 transition-all hover:-translate-y-0.5 hover:border-emerald-400/45 hover:bg-emerald-500/15"
-                    aria-label="Share on WhatsApp"
-                  >
-                    <FaWhatsapp className="h-5 w-5" />
-                  </a>
-                  <button
-                    type="button"
-                    onClick={shareOnInstagram}
-                    className="flex h-12 w-12 items-center justify-center rounded-full border border-pink-500/25 bg-pink-500/10 text-pink-300 transition-all hover:-translate-y-0.5 hover:border-pink-400/45 hover:bg-pink-500/15"
-                    aria-label="Share on Instagram"
-                  >
-                    <FaInstagram className="h-5 w-5" />
-                  </button>
-                  <a
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex h-12 w-12 items-center justify-center rounded-full border border-sky-500/25 bg-sky-500/10 text-sky-300 transition-all hover:-translate-y-0.5 hover:border-sky-400/45 hover:bg-sky-500/15"
-                    aria-label="Share on Facebook"
-                  >
-                    <FaFacebookF className="h-5 w-5" />
-                  </a>
-                  <a
-                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(productUrl)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex h-12 w-12 items-center justify-center rounded-full border border-cyan-400/25 bg-cyan-400/10 text-cyan-300 transition-all hover:-translate-y-0.5 hover:border-cyan-300/45 hover:bg-cyan-400/15"
-                    aria-label="Share on Twitter"
-                  >
-                    <FaTwitter className="h-5 w-5" />
-                  </a>
-                  <button
-                    type="button"
-                    onClick={shareNative}
-                    className="flex h-12 w-12 items-center justify-center rounded-full border border-gold-400/25 bg-gold-400/10 text-gold-200 transition-all hover:-translate-y-0.5 hover:border-gold-300/45 hover:bg-gold-400/15"
-                    aria-label="Open more share options"
-                  >
-                    <Send className="h-5 w-5" />
-                  </button>
-                </div>
-
-                <p className="mt-5 text-sm font-medium text-ivory/65">Or copy link</p>
-
-                <div className="mt-3 flex overflow-hidden rounded-xl border border-gold-400/15 bg-ink-soft/35">
-                  <div className="flex min-w-0 flex-1 items-center gap-2 px-3 py-2.5 text-sm text-ivory/60">
-                    <LinkIcon className="h-4 w-4 shrink-0 text-gold-300" />
-                    <span className="truncate">{productUrl}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={copyProductLink}
-                    className="shrink-0 bg-gold-gradient px-4 text-sm font-semibold text-ink transition-opacity hover:opacity-90"
-                  >
-                    Copy
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
+      <div className="flex flex-nowrap items-center gap-2 sm:gap-3">
+        <div className="shrink-0">
+          <ShareButton productName={product.name} />
         </div>
-
         {deliveryDate && (
-          <div className="inline-flex max-w-full items-center gap-3 rounded-2xl border border-gold-400/10 bg-ink-soft/30 px-4 py-3 text-sm text-ivory/70">
-            <Truck className="h-5 w-5 text-gold-300" />
-            <span>
-              Estimated Delivery: <span className="font-semibold text-ivory">{deliveryDate}</span>
+          <div className="inline-flex shrink-0 items-center gap-2 rounded-full border border-gold-400/10 bg-ink-soft/30 px-3.5 py-2 text-[11px] sm:text-sm text-ivory/70">
+            <Truck className="h-3.5 w-3.5 text-gold-300 shrink-0" />
+            <span className="whitespace-nowrap">
+              Est. Delivery: <span className="font-semibold text-ivory">{deliveryDate}</span>
             </span>
           </div>
         )}
       </div>
+
+      <PincodeChecker />
 
       {/* WhatsApp Link */}
       <a

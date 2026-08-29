@@ -49,6 +49,14 @@ module.exports = {
           "0%": { opacity: "0", transform: "translateY(24px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        scaleUp: {
+          "0%": { opacity: "0", transform: "scale(0.95)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
         shimmer: {
           "0%": { backgroundPosition: "0% 50%" },
           "100%": { backgroundPosition: "100% 50%" },
@@ -68,6 +76,8 @@ module.exports = {
       },
       animation: {
         fadeUp: "fadeUp 0.8s cubic-bezier(.22,1,.36,1) forwards",
+        fadeIn: "fadeIn 0.2s ease-out forwards",
+        scaleUp: "scaleUp 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards",
         shimmer: "shimmer 5s ease-in-out infinite alternate",
         floatSlow: "floatSlow 6s ease-in-out infinite",
         marquee: "marquee 32s linear infinite",

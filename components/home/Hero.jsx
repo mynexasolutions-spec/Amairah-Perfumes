@@ -116,13 +116,13 @@ export default function Hero({
         </p>
       )}
 
-      {buttonLink && (
+      {buttonLink && buttonText && (
         <div className="pointer-events-auto mt-3 sm:mt-10 flex flex-wrap items-center gap-2 sm:gap-5">
           <Link
             href={buttonLink}
             className="group btn-gold px-4 sm:px-10 py-2 sm:py-4.5 text-[11px] sm:text-base font-semibold hover:scale-[1.03] transition-all shadow-[0_4px_20px_rgba(212,175,55,0.15)] hover:shadow-[0_4px_25px_rgba(212,175,55,0.3)] animate-shimmer bg-[length:200%_200%]"
           >
-            Shop Now
+            {buttonText}
             <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
         </div>
@@ -217,13 +217,13 @@ export default function Hero({
         <div className="absolute left-1/3 bottom-0 h-[400px] w-[400px] rounded-full bg-gold-600/5 blur-[130px]" />
       </div>
 
-      {buttonLink && (
-        <Link
-          href={buttonLink}
-          aria-label={buttonText || `Open ${title || "hero banner"}`}
-          className="absolute inset-0 z-10 cursor-pointer"
-        />
-      )}
+      <Link
+        href={buttonLink || "/shop"}
+        aria-label={buttonText || `Open ${title || "hero banner"}`}
+        className="absolute inset-0 z-10 cursor-pointer"
+      >
+        <span className="absolute inset-0" aria-hidden="true" />
+      </Link>
 
       <div className="pointer-events-none relative mx-auto max-w-wrap px-4 sm:px-6 md:px-12 w-full z-20">
         {/* Content Container (Left-aligned overlay) */}
