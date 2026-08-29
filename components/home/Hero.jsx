@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, Sparkles, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { Sparkles, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import BottleGlyph from "@/components/BottleGlyph";
 import StarRating from "@/components/StarRating";
 
@@ -116,13 +116,13 @@ export default function Hero({
         </p>
       )}
 
-      {buttonText && buttonLink && (
-        <div className="mt-3 sm:mt-10 flex flex-wrap items-center gap-2 sm:gap-5">
+      {buttonLink && (
+        <div className="pointer-events-auto mt-3 sm:mt-10 flex flex-wrap items-center gap-2 sm:gap-5">
           <Link
             href={buttonLink}
             className="group btn-gold px-4 sm:px-10 py-2 sm:py-4.5 text-[11px] sm:text-base font-semibold hover:scale-[1.03] transition-all shadow-[0_4px_20px_rgba(212,175,55,0.15)] hover:shadow-[0_4px_25px_rgba(212,175,55,0.3)] animate-shimmer bg-[length:200%_200%]"
           >
-            {buttonText}
+            Shop Now
             <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
         </div>
@@ -203,13 +203,11 @@ export default function Hero({
             <BottleGlyph className="h-2/3 w-auto text-gold-300/20 drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] animate-floatSlow" />
           </div>
         )}
-        {/* Gradients to darken background for text readability */}
-        <div className="absolute inset-0 bg-[#0b0a0a]/45 sm:bg-[#0b0a0a]/35 md:bg-gradient-to-r md:from-[#0b0a0a]/65 md:via-[#0b0a0a]/30 md:to-transparent" />
-        {/* Subtle top/bottom shadow overlay to blend with header/footer */}
-        <div className="absolute inset-x-0 top-0 h-16 sm:h-32 bg-gradient-to-b from-[#0b0a0a] to-transparent pointer-events-none" />
-        <div className="absolute inset-x-0 bottom-0 h-16 sm:h-32 bg-gradient-to-t from-[#0b0a0a] to-transparent pointer-events-none" />
-        {/* Cinematic vignette */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(0,0,0,0.35)_100%)] pointer-events-none" />
+        {/* Light readability layers keep the banner image bright while preserving text contrast. */}
+        <div className="absolute inset-0 bg-[#0b0a0a]/20 sm:bg-[#0b0a0a]/15 md:bg-gradient-to-r md:from-[#0b0a0a]/38 md:via-[#0b0a0a]/12 md:to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-16 sm:h-28 bg-gradient-to-b from-[#0b0a0a]/65 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-16 sm:h-28 bg-gradient-to-t from-[#0b0a0a]/55 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_58%,rgba(0,0,0,0.16)_100%)] pointer-events-none" />
       </div>
 
       {/* Immersive background glows */}
@@ -219,7 +217,15 @@ export default function Hero({
         <div className="absolute left-1/3 bottom-0 h-[400px] w-[400px] rounded-full bg-gold-600/5 blur-[130px]" />
       </div>
 
-      <div className="relative mx-auto max-w-wrap px-4 sm:px-6 md:px-12 w-full z-10">
+      {buttonLink && (
+        <Link
+          href={buttonLink}
+          aria-label={buttonText || `Open ${title || "hero banner"}`}
+          className="absolute inset-0 z-10 cursor-pointer"
+        />
+      )}
+
+      <div className="pointer-events-none relative mx-auto max-w-wrap px-4 sm:px-6 md:px-12 w-full z-20">
         {/* Content Container (Left-aligned overlay) */}
         <div className={`max-w-2xl flex flex-col justify-center animate-fadeUp transition-all duration-500 ease-in-out ${
           animating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"

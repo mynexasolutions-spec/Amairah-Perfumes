@@ -1,12 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, ShoppingBag, MessageSquare, Check, Zap } from "lucide-react";
+import { Eye, Link as LinkIcon, Minus, Plus, Send, Share2, ShoppingBag, Truck, MessageSquare, Check, X, Zap } from "lucide-react";
+import { FaFacebookF, FaInstagram, FaTwitter, FaWhatsapp } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import { whatsappLink } from "@/lib/constants";
 import { useProductVariant } from "./ProductVariantContext";
+
+function getEstimatedDeliveryDate() {
+  const date = new Date();
+  date.setDate(date.getDate() + 5);
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function getViewerCount() {
+  return Math.floor(Math.random() * 91) + 10;
+}
 
 export default function ProductPurchasePanel({ product, variants }) {
   const router = useRouter();
@@ -16,11 +31,22 @@ export default function ProductPurchasePanel({ product, variants }) {
   const selectedId = ctx ? ctx.selectedId : localSelectedId;
   const setSelectedId = ctx ? ctx.setSelectedId : setLocalSelectedId;
   const [quantity, setQuantity] = useState(1);
+  const [viewerCount, setViewerCount] = useState(null);
+  const [deliveryDate, setDeliveryDate] = useState("");
+  const [productUrl, setProductUrl] = useState("");
+  const [shareOpen, setShareOpen] = useState(false);
   const { addToCart, setDrawerOpen } = useCart();
   const { showToast } = useToast();
 
   const selected = variants.find((v) => v.id === selectedId) || defaultVariant;
   const inStock = selected && selected.stock_quantity > 0;
+  const shareText = `Check out ${product.name} by Amairah Perfumes`;
+
+  useEffect(() => {
+    setViewerCount(getViewerCount());
+    setDeliveryDate(getEstimatedDeliveryDate());
+    setProductUrl(window.location.href);
+  }, []);
 
   if (!variants || variants.length === 0) {
     return (
@@ -71,6 +97,36 @@ export default function ProductPurchasePanel({ product, variants }) {
     router.push("/checkout");
   };
 
+  const copyProductLink = async () => {
+    if (!productUrl) return;
+    await navigator.clipboard.writeText(productUrl);
+    showToast("Product link copied.");
+  };
+
+  const shareNative = async () => {
+    if (!productUrl) return;
+    if (!navigator.share) {
+      await copyProductLink();
+      return;
+    }
+    try {
+      await navigator.share({
+        title: product.name,
+        text: shareText,
+        url: productUrl,
+      });
+    } catch (error) {
+      if (error?.name !== "AbortError") {
+        await copyProductLink();
+      }
+    }
+  };
+
+  const shareOnInstagram = async () => {
+    await copyProductLink();
+    window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
+  };
+
   return (
     <div className="space-y-6 sm:space-y-8">
       
@@ -91,6 +147,13 @@ export default function ProductPurchasePanel({ product, variants }) {
         )}
       </div>
 
+      {viewerCount && (
+        <div className="inline-flex max-w-full items-center gap-2.5 rounded-2xl border border-gold-400/10 bg-ink-soft/30 px-4 py-3 text-sm font-medium text-ivory/70">
+          <Eye className="h-4 w-4 text-gold-300" />
+          <span>{viewerCount} people are viewing this right now</span>
+        </div>
+      )}
+
       {/* Size buttons */}
       <div>
         <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-300">
@@ -102,19 +165,25 @@ export default function ProductPurchasePanel({ product, variants }) {
             const sizeInStock = optionsForSize.some((v) => v.stock_quantity > 0);
             const isSelected = selected.variant_name === name;
             return (
-              <button
-                key={name}
-                disabled={!sizeInStock}
-                onClick={() => selectSize(name)}
-                className={`flex items-center gap-1.5 rounded-2xl border px-5 py-2.5 text-sm sm:text-base transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-20 ${
-                  isSelected
-                    ? "bg-gold-gradient text-ink border-transparent font-semibold shadow-gold/20 scale-[1.02]"
-                    : "border-ink-line bg-ink-soft/40 text-ivory/60 hover:border-gold-400/30 hover:text-ivory"
-                }`}
-              >
-                {isSelected && <Check className="h-3.5 w-3.5" />}
-                {name}
-              </button>
+              <div key={name} className="flex flex-col items-stretch gap-1.5">
+                <button
+                  disabled={!sizeInStock}
+                  onClick={() => selectSize(name)}
+                  className={`flex w-full items-center justify-center gap-1.5 rounded-2xl border px-5 py-2.5 text-sm sm:text-base transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 ${
+                    isSelected
+                      ? "bg-gold-gradient text-ink border-transparent font-semibold shadow-gold/20 scale-[1.02]"
+                      : "border-ink-line bg-ink-soft/40 text-ivory/60 hover:border-gold-400/30 hover:text-ivory"
+                  }`}
+                >
+                  {isSelected && <Check className="h-3.5 w-3.5" />}
+                  {name}
+                </button>
+                {!sizeInStock && (
+                  <span className="w-full rounded-xl border border-red-500/25 bg-red-500/10 px-2 py-0.5 text-center text-[8px] font-semibold uppercase tracking-wider text-red-400">
+                    Out of stock
+                  </span>
+                )}
+              </div>
             );
           })}
         </div>
@@ -132,20 +201,26 @@ export default function ProductPurchasePanel({ product, variants }) {
             const bottleType = v.bottle_type || "glass";
             const isSelected = selected.id === v.id;
             return (
-              <button
-                key={v.id}
-                disabled={v.stock_quantity <= 0}
-                onClick={() => selectBottleType(bottleType)}
-                className={`flex items-center gap-1.5 rounded-2xl border px-5 py-2.5 text-sm sm:text-base transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-20 ${
-                  isSelected
-                    ? "bg-gold-gradient text-ink border-transparent font-semibold shadow-gold/20 scale-[1.02]"
-                    : "border-ink-line bg-ink-soft/40 text-ivory/60 hover:border-gold-400/30 hover:text-ivory"
-                }`}
-              >
-                {isSelected && <Check className="h-3.5 w-3.5" />}
-                {bottleType === "plastic" ? "Plastic Bottle" : "Glass Bottle"}
-                <span className="text-xs opacity-70">₹{v.price.toLocaleString("en-IN")}</span>
-              </button>
+              <div key={v.id} className="flex flex-col items-stretch gap-1.5">
+                <button
+                  disabled={v.stock_quantity <= 0}
+                  onClick={() => selectBottleType(bottleType)}
+                  className={`flex w-full items-center justify-center gap-1.5 rounded-2xl border px-5 py-2.5 text-sm sm:text-base transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 ${
+                    isSelected
+                      ? "bg-gold-gradient text-ink border-transparent font-semibold shadow-gold/20 scale-[1.02]"
+                      : "border-ink-line bg-ink-soft/40 text-ivory/60 hover:border-gold-400/30 hover:text-ivory"
+                  }`}
+                >
+                  {isSelected && <Check className="h-3.5 w-3.5" />}
+                  {bottleType === "plastic" ? "Plastic Bottle" : "Glass Bottle"}
+                  <span className="text-xs opacity-70">₹{v.price.toLocaleString("en-IN")}</span>
+                </button>
+                {v.stock_quantity <= 0 && (
+                  <span className="w-full rounded-xl border border-red-500/25 bg-red-500/10 px-2 py-0.5 text-center text-[8px] font-semibold uppercase tracking-wider text-red-400">
+                    Out of stock
+                  </span>
+                )}
+              </div>
             );
           })}
         </div>
@@ -188,6 +263,123 @@ export default function ProductPurchasePanel({ product, variants }) {
         </button>
       </div>
 
+      <div className="flex flex-wrap items-start gap-3">
+        <div className="relative z-[1000]">
+          <div className="w-fit max-w-full rounded-2xl border border-gold-400/10 bg-ink-soft/30 px-4 py-2">
+            <button
+              type="button"
+              onClick={() => setShareOpen((open) => !open)}
+              className="inline-flex items-center justify-center gap-2 text-sm font-semibold uppercase leading-none tracking-widest text-ivory/70 transition-colors hover:text-gold-200"
+            >
+              <Share2 className="h-4.5 w-4.5 text-gold-300" />
+              <span>Share</span>
+            </button>
+          </div>
+
+          {shareOpen && (
+            <>
+              <button
+                type="button"
+                aria-label="Close share popup"
+                className="fixed inset-0 z-20 cursor-default bg-black/70 backdrop-blur-sm"
+                onClick={() => setShareOpen(false)}
+              />
+              <div className="absolute left-0 top-0 z-30 w-[min(22rem,calc(100vw-3rem))] overflow-hidden rounded-[1.35rem] border border-gold-400/20 bg-[#100d0b] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.65),0_0_28px_rgba(212,163,89,0.08)]">
+                <div className="absolute inset-x-0 top-0 h-px bg-gold-gradient" />
+                <div className="flex items-center justify-between gap-4">
+                  <h3 className="font-display text-xl font-semibold text-ivory">
+                    Share Product
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShareOpen(false)}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold-400/10 bg-ink-soft/70 text-ivory/50 transition-colors hover:text-gold-200"
+                    aria-label="Close share popup"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="my-4 h-px bg-ink-line" />
+
+                <p className="text-sm font-medium text-ivory/65">Share this link via</p>
+
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(`${shareText}: ${productUrl}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-12 w-12 items-center justify-center rounded-full border border-emerald-500/25 bg-emerald-500/10 text-emerald-300 transition-all hover:-translate-y-0.5 hover:border-emerald-400/45 hover:bg-emerald-500/15"
+                    aria-label="Share on WhatsApp"
+                  >
+                    <FaWhatsapp className="h-5 w-5" />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={shareOnInstagram}
+                    className="flex h-12 w-12 items-center justify-center rounded-full border border-pink-500/25 bg-pink-500/10 text-pink-300 transition-all hover:-translate-y-0.5 hover:border-pink-400/45 hover:bg-pink-500/15"
+                    aria-label="Share on Instagram"
+                  >
+                    <FaInstagram className="h-5 w-5" />
+                  </button>
+                  <a
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-12 w-12 items-center justify-center rounded-full border border-sky-500/25 bg-sky-500/10 text-sky-300 transition-all hover:-translate-y-0.5 hover:border-sky-400/45 hover:bg-sky-500/15"
+                    aria-label="Share on Facebook"
+                  >
+                    <FaFacebookF className="h-5 w-5" />
+                  </a>
+                  <a
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(productUrl)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-12 w-12 items-center justify-center rounded-full border border-cyan-400/25 bg-cyan-400/10 text-cyan-300 transition-all hover:-translate-y-0.5 hover:border-cyan-300/45 hover:bg-cyan-400/15"
+                    aria-label="Share on Twitter"
+                  >
+                    <FaTwitter className="h-5 w-5" />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={shareNative}
+                    className="flex h-12 w-12 items-center justify-center rounded-full border border-gold-400/25 bg-gold-400/10 text-gold-200 transition-all hover:-translate-y-0.5 hover:border-gold-300/45 hover:bg-gold-400/15"
+                    aria-label="Open more share options"
+                  >
+                    <Send className="h-5 w-5" />
+                  </button>
+                </div>
+
+                <p className="mt-5 text-sm font-medium text-ivory/65">Or copy link</p>
+
+                <div className="mt-3 flex overflow-hidden rounded-xl border border-gold-400/15 bg-ink-soft/35">
+                  <div className="flex min-w-0 flex-1 items-center gap-2 px-3 py-2.5 text-sm text-ivory/60">
+                    <LinkIcon className="h-4 w-4 shrink-0 text-gold-300" />
+                    <span className="truncate">{productUrl}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={copyProductLink}
+                    className="shrink-0 bg-gold-gradient px-4 text-sm font-semibold text-ink transition-opacity hover:opacity-90"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {deliveryDate && (
+          <div className="inline-flex max-w-full items-center gap-3 rounded-2xl border border-gold-400/10 bg-ink-soft/30 px-4 py-3 text-sm text-ivory/70">
+            <Truck className="h-5 w-5 text-gold-300" />
+            <span>
+              Estimated Delivery: <span className="font-semibold text-ivory">{deliveryDate}</span>
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* WhatsApp Link */}
       <a
         href={whatsappLink(
@@ -199,6 +391,7 @@ export default function ProductPurchasePanel({ product, variants }) {
       >
         <MessageSquare className="w-3.5 h-3.5 text-emerald-500" /> Prefer to order on WhatsApp instead?
       </a>
+
     </div>
   );
 }

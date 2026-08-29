@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { User, Mail, Phone, Lock, Eye, EyeOff, UserPlus, KeyRound, ShieldCheck } from "lucide-react";
 import { requestSignupOtp, verifySignupOtp } from "@/actions/auth";
 import BottleGlyph from "@/components/BottleGlyph";
+import GoogleAuthButton from "@/components/GoogleAuthButton";
 
 const inputClass =
   "w-full rounded-2xl border border-gold-400/10 bg-ink/40 py-4 pl-12 pr-4 text-base text-ivory placeholder:text-ivory/20 transition-all duration-500 focus:border-gold-300/50 focus:bg-ink/70 focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/20";
@@ -65,7 +66,19 @@ export default function RegisterForm() {
           <h1 className="relative mt-3 text-center font-display text-3xl sm:text-4xl text-ivory font-light">Create an Account</h1>
           <p className="relative mt-3 text-center text-base text-ivory/50 font-light">Faster checkout and order tracking, every visit.</p>
 
-          <form action={otpAction} onSubmit={handleDetailsSubmit} className="relative mt-9 space-y-4">
+          <div className="relative mt-9">
+            <GoogleAuthButton redirectTo={redirectTo} label="Sign up with Google" />
+          </div>
+
+          <div className="relative my-7 flex items-center">
+            <div className="h-px flex-1 bg-ink-line" />
+            <span className="px-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-ivory/30">
+              Or
+            </span>
+            <div className="h-px flex-1 bg-ink-line" />
+          </div>
+
+          <form action={otpAction} onSubmit={handleDetailsSubmit} className="relative space-y-4">
             {otpState.error && (
               <div className="flex items-center gap-2 rounded-2xl border border-red-500/25 bg-red-500/10 p-4 text-sm text-red-300 animate-fadeUp">
                 <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />

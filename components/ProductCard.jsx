@@ -13,7 +13,7 @@ export default function ProductCard({ product }) {
 
   const handleQuickAdd = (e) => {
     e.preventDefault();
-    if (!product.variantId) return;
+    if (!product.variantId || !product.inStock) return;
     addToCart({
       variantId: product.variantId,
       productId: product.id,
@@ -56,7 +56,7 @@ export default function ProductCard({ product }) {
           </span>
         )}
 
-        {product.variantId && (
+        {product.variantId && product.inStock && (
           <button
             onClick={handleQuickAdd}
             aria-label={`Add ${product.name} to bag`}
@@ -102,7 +102,7 @@ export default function ProductCard({ product }) {
         </div>
 
         {!product.inStock && (
-          <p className="mt-2.5 text-[10px] uppercase tracking-wider text-red-400 font-semibold">Out of stock</p>
+          <p className="mt-2.5 text-[10px] uppercase tracking-wider text-red-400 font-semibold">Sold out</p>
         )}
       </div>
     </Link>

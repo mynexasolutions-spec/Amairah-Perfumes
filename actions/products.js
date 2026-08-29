@@ -2,6 +2,7 @@
 
 // Amairah Perfumes - Products Actions (Strict Async Exports Only)
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
 const LISTING_SELECT = `
   id, name, slug, badge, gender, average_rating, review_count,
@@ -122,6 +123,7 @@ function withDisplayPrice(product) {
   // page, so it must never surface here even when it's the cheaper option.
   const glassVariants = activeVariants.filter((v) => (v.bottle_type || "glass") === "glass");
   const cheapest = (glassVariants.length > 0 ? glassVariants : activeVariants).sort((a, b) => a.price - b.price)[0];
+  const displayedVariantInStock = Boolean(cheapest && cheapest.stock_quantity > 0);
   const image =
     product.featured_image_url ||
     [...(product.product_images || [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.image_url ||
@@ -144,13 +146,14 @@ function withDisplayPrice(product) {
     // Always Glass here (see filter above), so label it explicitly to match
     // the product page's cart item naming.
     variantName: cheapest ? `${cheapest.variant_name} (Glass Bottle)` : null,
-    inStock: activeVariants.some((v) => v.stock_quantity > 0),
+    inStock: displayedVariantInStock,
+    hasAnyStock: activeVariants.some((v) => v.stock_quantity > 0),
   };
 }
 
 export async function getProducts(filters = {}) {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     let query = supabase.from("products").select(LISTING_SELECT).eq("is_active", true);
 
     if (filters.categoryId) query = query.eq("category_id", filters.categoryId);
@@ -186,7 +189,7 @@ export async function getProducts(filters = {}) {
 
 export async function getFeaturedProducts(limit = 4) {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("products")
       .select(LISTING_SELECT)
@@ -205,7 +208,7 @@ export async function getFeaturedProducts(limit = 4) {
 
 export async function getRelatedProducts(categoryId, excludeId, limit = 4) {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     let data = null;
 
     if (categoryId) {

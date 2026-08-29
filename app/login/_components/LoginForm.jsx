@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import { login } from "@/actions/auth";
 import BottleGlyph from "@/components/BottleGlyph";
+import GoogleAuthButton from "@/components/GoogleAuthButton";
 
 const inputClass =
   "w-full rounded-2xl border border-gold-400/10 bg-ink/40 py-4 pl-12 pr-4 text-base text-ivory placeholder:text-ivory/20 transition-all duration-500 focus:border-gold-300/50 focus:bg-ink/70 focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/20";
@@ -13,6 +14,7 @@ const inputClass =
 export default function LoginForm() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/";
+  const oauthError = searchParams.get("error") === "google";
   const [state, formAction, pending] = useActionState(login, {});
   const [showPassword, setShowPassword] = useState(false);
 
@@ -40,6 +42,12 @@ export default function LoginForm() {
           <div className="flex items-center gap-2 rounded-2xl border border-red-500/25 bg-red-500/10 p-4 text-sm text-red-300 animate-fadeUp">
             <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
             {state.error}
+          </div>
+        )}
+        {oauthError && (
+          <div className="flex items-center gap-2 rounded-2xl border border-red-500/25 bg-red-500/10 p-4 text-sm text-red-300 animate-fadeUp">
+            <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
+            Google sign-in could not be completed. Please check your Supabase Google provider setup.
           </div>
         )}
 
@@ -97,6 +105,16 @@ export default function LoginForm() {
           )}
         </button>
       </form>
+
+      <div className="relative my-7 flex items-center">
+        <div className="h-px flex-1 bg-ink-line" />
+        <span className="px-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-ivory/30">
+          Or
+        </span>
+        <div className="h-px flex-1 bg-ink-line" />
+      </div>
+
+      <GoogleAuthButton redirectTo={redirectTo} label="Continue with Google" />
 
       <p className="relative mt-7 text-center text-base text-ivory/50 font-light">
         New to Amairah?{" "}

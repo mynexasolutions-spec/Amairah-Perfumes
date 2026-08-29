@@ -40,7 +40,7 @@ export default async function RootLayout({ children }) {
   const quantityDiscount = await getQuantityDiscountSettings();
 
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable}`} suppressHydrationWarning>
       <head>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-3B35X4N265"
@@ -56,7 +56,7 @@ export default async function RootLayout({ children }) {
           `}
         </Script>
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <ToastProvider>
           <CartProvider>
             {children}
