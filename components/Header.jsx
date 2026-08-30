@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, ShoppingBag, User, Sparkles, ChevronDown, ChevronRight, LayoutDashboard, LogOut, Search } from "lucide-react";
+import { Menu, X, ShoppingBag, User, Sparkles, ChevronDown, ChevronRight, LayoutDashboard, LogOut, LogIn, Search } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { logout } from "@/actions/auth";
 
@@ -185,7 +185,7 @@ export default function Header({ categories = [], announcement, isLoggedIn = fal
                 className="flex h-10 items-center gap-2 rounded-full border border-gold-400/20 bg-gold-400/5 px-4 text-xs font-semibold uppercase tracking-widest text-gold-200 transition-all duration-300 hover:border-gold-300/40 hover:bg-gold-400/10 hover:scale-[1.03]"
               >
                 <LayoutDashboard className="h-4 w-4" />
-                Dashboard
+                Account
               </Link>
               <form action={logout}>
                 <button
@@ -312,7 +312,7 @@ export default function Header({ categories = [], announcement, isLoggedIn = fal
                   className="flex flex-1 items-center gap-2 rounded-xl px-4 py-3 font-display text-lg tracking-wide text-gold-200 bg-gold-400/5 border border-gold-400/20 hover:bg-gold-400/10 transition-all"
                 >
                   <LayoutDashboard className="h-5 w-5" />
-                  Dashboard
+                  Account
                 </Link>
                 <form action={logout}>
                   <button
@@ -326,11 +326,12 @@ export default function Header({ categories = [], announcement, isLoggedIn = fal
               </div>
             ) : (
               <Link
-                href="/account"
+                href="/login"
                 onClick={() => setMobileOpen(false)}
-                className="rounded-xl px-4 py-3 font-display text-lg tracking-wide text-ivory hover:bg-ink-soft/50 hover:text-gold-300 transition-all"
+                className="btn-gold flex items-center justify-center gap-2 py-3 text-sm font-semibold tracking-widest uppercase"
               >
-                Account Portal
+                <LogIn className="h-4 w-4" />
+                Login
               </Link>
             )}
 
