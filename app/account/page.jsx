@@ -45,7 +45,7 @@ export default async function AccountPage() {
                   Account
                 </span>
               </h1>
-              <p className="mt-3 text-sm sm:text-base text-ivory/50 font-light break-words">
+              <p className="mt-3 text-sm sm:text-base text-ivory/60 font-semibold break-words">
                 {profile?.full_name || "Amairah Customer"} · {profile?.email}
               </p>
             </div>

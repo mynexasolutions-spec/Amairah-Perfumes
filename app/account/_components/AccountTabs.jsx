@@ -1,8 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Package, User, Mail, Phone, ChevronRight, Truck, ExternalLink } from "lucide-react";
+import { Package, User, Mail, Phone, ChevronRight, Truck, ExternalLink, Pencil, AlertCircle, X } from "lucide-react";
+import { updateProfile } from "@/actions/account";
+
+const inputClass =
+  "w-full rounded-xl border border-gold-400/10 bg-ink/40 px-4 py-2.5 text-sm sm:text-base text-ivory placeholder:text-ivory/20 transition-colors duration-300 focus:border-gold-300/50 focus:outline-none focus:ring-1 focus:ring-gold-400/20";
 
 const STATUS_STYLES = {
   pending: "text-ivory/60 bg-ivory/5 border-ivory/10",
@@ -26,9 +31,63 @@ const STATUS_FILTERS = [
   { key: "cancelled", label: "Cancelled" },
 ];
 
+function ProfileEditForm({ profile, onDone }) {
+  const [state, formAction, pending] = useActionState(updateProfile, {});
+  const router = useRouter();
+
+  useEffect(() => {
+    if (state.success) {
+      router.refresh();
+      onDone();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.success]);
+
+  return (
+    <form action={formAction} className="space-y-4">
+      {state.error && (
+        <div className="flex items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/10 p-3 text-sm text-red-300">
+          <AlertCircle className="h-4 w-4 shrink-0" /> {state.error}
+        </div>
+      )}
+
+      <div>
+        <label className="mb-1.5 block text-xs uppercase tracking-wide text-ivory/40">Full Name</label>
+        <input name="full_name" defaultValue={profile?.full_name || ""} required className={inputClass} />
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-xs uppercase tracking-wide text-ivory/40">Phone Number</label>
+        <input
+          name="phone"
+          type="tel"
+          maxLength={10}
+          defaultValue={profile?.phone || ""}
+          placeholder="10-digit phone number"
+          className={inputClass}
+        />
+      </div>
+
+      <div className="flex items-center gap-2 pt-1">
+        <button type="submit" disabled={pending} className="btn-gold w-fit px-6 py-2.5 text-sm disabled:opacity-60">
+          {pending ? "Saving…" : "Save Changes"}
+        </button>
+        <button
+          type="button"
+          onClick={onDone}
+          className="flex w-fit items-center justify-center gap-1.5 rounded-xl border border-ink-line px-4 py-2.5 text-sm text-ivory/60 hover:text-ivory hover:border-gold-400/20"
+        >
+          <X className="h-4 w-4" /> Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export default function AccountTabs({ profile, orders }) {
   const [activeTab, setActiveTab] = useState("orders");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [editingProfile, setEditingProfile] = useState(false);
 
   const filteredOrders =
     statusFilter === "all" ? orders : (orders || []).filter((o) => o.order_status === statusFilter);
@@ -88,6 +147,9 @@ export default function AccountTabs({ profile, orders }) {
           {!orders || orders.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-ink-line py-16 text-center">
               <p className="text-base text-ivory/40">You haven't placed any orders yet.</p>
+              <Link href="/shop" className="btn-gold mt-6 inline-flex px-8 py-3.5 text-sm">
+                Shop Now
+              </Link>
             </div>
           ) : filteredOrders.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-ink-line py-16 text-center">
@@ -166,7 +228,17 @@ export default function AccountTabs({ profile, orders }) {
       {/* My Profile Tab */}
       {activeTab === "profile" && (
         <div className="mt-8">
-          <h2 className="font-display text-xl sm:text-2xl text-ivory mb-6">My Profile</h2>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="font-display text-xl sm:text-2xl text-ivory">My Profile</h2>
+            {!editingProfile && (
+              <button
+                onClick={() => setEditingProfile(true)}
+                className="flex items-center gap-1.5 rounded-full border border-gold-400/20 bg-gold-400/5 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gold-200 transition-all duration-300 hover:border-gold-300/40 hover:bg-gold-400/10"
+              >
+                <Pencil className="h-3.5 w-3.5" /> Edit
+              </button>
+            )}
+          </div>
           <div className="card-panel p-6 sm:p-10 space-y-6">
             <div className="flex items-center gap-4 sm:gap-5 pb-6 border-b border-ink-line">
               <div className="flex h-14 w-14 sm:h-18 sm:w-18 shrink-0 items-center justify-center rounded-full border border-gold-400/20 bg-gold-400/5 text-gold-300 shadow-[0_0_20px_rgba(212,163,89,0.1)]">
@@ -178,19 +250,25 @@ export default function AccountTabs({ profile, orders }) {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm sm:text-base">
-              <Mail className="h-5 w-5 text-gold-400/60 shrink-0" />
-              <span className="text-ivory/40">Email</span>
-              <ChevronRight className="h-3.5 w-3.5 text-ivory/20 hidden sm:block" />
-              <span className="text-ivory font-medium break-all">{profile?.email || "—"}</span>
-            </div>
+            {editingProfile ? (
+              <ProfileEditForm profile={profile} onDone={() => setEditingProfile(false)} />
+            ) : (
+              <>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm sm:text-base">
+                  <Mail className="h-5 w-5 text-gold-400/60 shrink-0" />
+                  <span className="text-ivory/40">Email</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-ivory/20 hidden sm:block" />
+                  <span className="text-ivory font-medium break-all">{profile?.email || "—"}</span>
+                </div>
 
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm sm:text-base">
-              <Phone className="h-5 w-5 text-gold-400/60 shrink-0" />
-              <span className="text-ivory/40">Phone</span>
-              <ChevronRight className="h-3.5 w-3.5 text-ivory/20 hidden sm:block" />
-              <span className="text-ivory font-medium break-all">{profile?.phone || "Not provided"}</span>
-            </div>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm sm:text-base">
+                  <Phone className="h-5 w-5 text-gold-400/60 shrink-0" />
+                  <span className="text-ivory/40">Phone</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-ivory/20 hidden sm:block" />
+                  <span className="text-ivory font-medium break-all">{profile?.phone || "Not provided"}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -166,6 +166,17 @@ export default function Header({ categories = [], announcement, isLoggedIn = fal
             <Search className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
 
+          {/* Account (Mobile, logged in) */}
+          {isLoggedIn && (
+            <Link
+              href="/account"
+              aria-label="My Account"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-gold-400/20 bg-gold-400/5 text-gold-200 transition-all duration-300 hover:border-gold-300/40 hover:bg-gold-400/10 hover:scale-105 sm:hidden"
+            >
+              <User className="h-4 w-4" />
+            </Link>
+          )}
+
           {/* Account (Desktop) */}
           {isLoggedIn ? (
             <div className="hidden items-center gap-2 sm:flex">

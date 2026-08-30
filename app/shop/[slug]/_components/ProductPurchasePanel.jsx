@@ -7,8 +7,8 @@ import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import { whatsappLink } from "@/lib/constants";
 import { useProductVariant } from "./ProductVariantContext";
-import ShareButton from "./ShareButton";
 import PincodeChecker from "./PincodeChecker";
+import ShareButton from "./ShareButton";
 
 function getEstimatedDeliveryDate() {
   const date = new Date();
@@ -113,7 +113,7 @@ export default function ProductPurchasePanel({ product, variants }) {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      
+
       {/* Price block */}
       <div className="flex flex-wrap items-baseline gap-4">
         <span className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-100 via-gold-200 to-gold-400">
