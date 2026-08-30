@@ -1,9 +1,10 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { SHIPPING_DEFAULTS, calculateQuantityDiscount } from "@/lib/constants";
+import { SHIPPING_DEFAULTS, calculateQuantityDiscount, calculateBundleDiscount } from "@/lib/constants";
 import { isCodEnabled, isOnlinePaymentEnabled } from "@/actions/settings";
 import { getQuantityDiscountSettings } from "@/actions/admin/quantityDiscount";
+import { getBundleSettings } from "@/actions/bundle";
 import crypto from "crypto";
 
 function getRazorpayInstance() {
@@ -131,10 +132,11 @@ export async function processCheckout(addressInput, items, paymentMethod, coupon
   // Automatic discount based on total cart quantity — always recomputed
   // server-side from the live rules, independent of any coupon code.
   const totalQuantity = items.reduce((sum, i) => sum + i.quantity, 0);
-  const quantityDiscountSettings = await getQuantityDiscountSettings();
+  const [quantityDiscountSettings, bundleSettings] = await Promise.all([getQuantityDiscountSettings(), getBundleSettings()]);
   const quantityDiscount = calculateQuantityDiscount(totalQuantity, quantityDiscountSettings);
+  const bundleDiscount = calculateBundleDiscount(items, bundleSettings);
 
-  const discountAmount = couponDiscount + quantityDiscount;
+  const discountAmount = couponDiscount + quantityDiscount + bundleDiscount;
 
   const totalAmount = Math.max(0, subtotal + shippingCost + codCost - discountAmount);
 
@@ -153,6 +155,7 @@ export async function processCheckout(addressInput, items, paymentMethod, coupon
       discount_amount: discountAmount,
       coupon_discount: couponDiscount,
       quantity_discount: quantityDiscount,
+      bundle_discount: bundleDiscount,
       coupon_code: couponResult.couponCode || null,
       total_amount: totalAmount,
       payment_method: paymentMethod,
@@ -193,7 +196,11 @@ export async function processCheckout(addressInput, items, paymentMethod, coupon
         currency: "INR",
         receipt: order.id,
       });
-      await supabase.from("orders").update({ razorpay_order_id: rzpOrder.id }).eq("id", order.id);
+      // orders has no UPDATE RLS policy for the customer session (only
+      // SELECT/INSERT of their own rows) — same class of bug as the stock
+      // decrement below, same fix: route it through the service-role client.
+      const { createAdminClient: createAdminClientForOrder } = await import("@/lib/supabase/admin");
+      await createAdminClientForOrder().from("orders").update({ razorpay_order_id: rzpOrder.id }).eq("id", order.id);
 
       return {
         success: true,
@@ -211,7 +218,11 @@ export async function processCheckout(addressInput, items, paymentMethod, coupon
     }
   }
 
-  await decrementStock(supabase, items);
+  // product_variants only has a public read RLS policy — no update policy
+  // for the customer's own session — so this must run with the service-role
+  // client, same as the Razorpay path below already does.
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  await decrementStock(createAdminClient(), items);
 
   return { success: true, isRazorpay: false, orderId: order.id, orderNumber: order.order_number };
 }

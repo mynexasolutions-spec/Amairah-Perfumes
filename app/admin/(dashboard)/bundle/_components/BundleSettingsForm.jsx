@@ -6,8 +6,8 @@ import { updateBundleSettings } from "@/actions/admin/bundle";
 import ImageUploader from "@/components/admin/ImageUploader";
 
 const inputClass =
-  "w-full rounded-xl border border-gold-400/10 bg-ink/40 px-4 py-2.5 text-sm text-ivory transition-colors duration-300 focus:border-gold-400/40 focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/20";
-const labelClass = "mb-1.5 block text-sm font-semibold uppercase tracking-wide text-ivory/40";
+  "w-full rounded-xl border border-gold-400/10 bg-ink/40 px-4 py-2.5 text-base text-ivory transition-colors duration-300 focus:border-gold-400/40 focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/20";
+const labelClass = "mb-1.5 block text-sm font-semibold uppercase tracking-wide text-ivory/50";
 
 export default function BundleSettingsForm({ settings }) {
   const [state, formAction, pending] = useActionState(updateBundleSettings, {});
@@ -25,7 +25,7 @@ export default function BundleSettingsForm({ settings }) {
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold-400/10 text-gold-300">
           <Sparkles className="h-4 w-4" />
         </div>
-        <h2 className="font-display text-base text-ivory">Bundle Settings</h2>
+        <h2 className="font-display text-lg text-ivory">Bundle Settings</h2>
       </div>
 
       {state.error && (
@@ -47,7 +47,7 @@ export default function BundleSettingsForm({ settings }) {
           onChange={(e) => setEnabled(e.target.checked)}
           className="h-4 w-4 accent-gold-400"
         />
-        <span className="text-sm text-ivory">Show the "/bundle" page and nav link</span>
+        <span className="text-base text-ivory">Show the "Gift Set" page and nav link</span>
       </label>
 
       <div>
@@ -59,7 +59,22 @@ export default function BundleSettingsForm({ settings }) {
           defaultValue={settings.bottle_count}
           className={inputClass}
         />
-        <p className="mt-1.5 text-xs text-ivory/30">How many products a customer must select before they can add the bundle to their bag.</p>
+        <p className="mt-1.5 text-sm text-ivory/40">How many products a customer must select before they can add the bundle to their bag.</p>
+      </div>
+
+      <div>
+        <label className={labelClass}>Fixed Bundle Price (₹)</label>
+        <input
+          type="number"
+          name="fixed_price"
+          min={1}
+          defaultValue={settings.fixed_price ?? ""}
+          placeholder="e.g. 799"
+          className={inputClass}
+        />
+        <p className="mt-1.5 text-sm text-ivory/40">
+          Each product still shows its own price, but once a customer picks the full set, the total drops to this flat price. Leave blank to just charge the sum of individual prices.
+        </p>
       </div>
 
       <div>
@@ -74,10 +89,15 @@ export default function BundleSettingsForm({ settings }) {
 
       <div>
         <label className={labelClass}>Banner image (optional)</label>
-        <ImageUploader value={bannerImageUrl} onChange={setBannerImageUrl} folder="amairah/bundle" />
+        <ImageUploader
+          value={bannerImageUrl}
+          onChange={setBannerImageUrl}
+          folder="amairah/bundle"
+          previewClassName="aspect-video w-full max-w-md"
+        />
       </div>
 
-      <button type="submit" disabled={pending} className="btn-gold w-full disabled:opacity-60">
+      <button type="submit" disabled={pending} className="btn-gold w-fit px-8 disabled:opacity-60">
         {pending ? "Saving…" : "Save Settings"}
       </button>
     </form>

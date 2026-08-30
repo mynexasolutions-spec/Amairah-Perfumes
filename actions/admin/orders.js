@@ -28,7 +28,7 @@ export async function getOrderById(id) {
   const { data } = await supabase
     .from("orders")
     .select(`
-      id, order_number, subtotal, shipping_cost, discount_amount, coupon_discount, quantity_discount, coupon_code, total_amount,
+      id, order_number, subtotal, shipping_cost, discount_amount, coupon_discount, quantity_discount, bundle_discount, coupon_code, total_amount,
       payment_method, payment_status, order_status, created_at, razorpay_order_id, razorpay_payment_id,
       tracking_number, courier_name, shipment_status, shipped_at,
       profiles ( full_name, email, phone ),

@@ -22,7 +22,7 @@ export async function getBundleEligibleProducts() {
       .select(
         `
         id, sort_order,
-        products ( id, name, slug, featured_image_url, is_active ),
+        products ( id, name, slug, short_description, featured_image_url, is_active, product_images ( image_url, sort_order ) ),
         product_variants ( id, variant_name, price, original_price, stock_quantity, is_active )
       `
       )
@@ -33,18 +33,26 @@ export async function getBundleEligibleProducts() {
 
     return data
       .filter((row) => row.products?.is_active && row.product_variants?.is_active)
-      .map((row) => ({
-        bundleItemId: row.id,
-        productId: row.products.id,
-        variantId: row.product_variants.id,
-        slug: row.products.slug,
-        name: row.products.name,
-        variantName: row.product_variants.variant_name,
-        image: row.products.featured_image_url,
-        price: row.product_variants.price,
-        oldPrice: row.product_variants.original_price,
-        inStock: row.product_variants.stock_quantity > 0,
-      }));
+      .map((row) => {
+        const gallery = (row.products.product_images || [])
+          .slice()
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((i) => i.image_url);
+        return {
+          bundleItemId: row.id,
+          productId: row.products.id,
+          variantId: row.product_variants.id,
+          slug: row.products.slug,
+          name: row.products.name,
+          description: row.products.short_description || "",
+          variantName: row.product_variants.variant_name,
+          image: row.products.featured_image_url,
+          images: [row.products.featured_image_url, ...gallery].filter(Boolean),
+          price: row.product_variants.price,
+          oldPrice: row.product_variants.original_price,
+          inStock: row.product_variants.stock_quantity > 0,
+        };
+      });
   } catch (err) {
     console.error("Fetch bundle eligible products error:", err);
     return [];

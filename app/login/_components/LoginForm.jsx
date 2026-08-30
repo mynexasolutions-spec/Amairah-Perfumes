@@ -9,7 +9,7 @@ import { login } from "@/actions/auth";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
 
 const inputClass =
-  "w-full rounded-2xl border border-gold-400/10 bg-ink/40 py-4 pl-12 pr-4 text-base text-ivory placeholder:text-ivory/20 transition-all duration-500 focus:border-gold-300/50 focus:bg-ink/70 focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/20";
+  "w-full rounded-2xl border border-gold-400/10 bg-ink/40 py-3 pl-12 pr-4 text-base text-ivory placeholder:text-ivory/20 transition-all duration-500 focus:border-gold-300/50 focus:bg-ink/70 focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/20";
 
 export default function LoginForm() {
   const searchParams = useSearchParams();
@@ -19,19 +19,19 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="relative w-full max-w-md rounded-[2.5rem] border border-gold-400/10 bg-gradient-to-b from-[#120f0d]/90 via-[#0b0a0a]/90 to-[#080707]/95 p-8 sm:p-12 shadow-[0_30px_80px_rgba(0,0,0,0.8),0_0_50px_rgba(212,163,89,0.02)] backdrop-blur-xl transition-all duration-500 hover:border-gold-400/20">
+    <div className="relative w-full max-w-md rounded-[2.5rem] border border-gold-400/10 bg-gradient-to-b from-[#120f0d]/90 via-[#0b0a0a]/90 to-[#080707]/95 p-6 sm:p-9 shadow-[0_30px_80px_rgba(0,0,0,0.8),0_0_50px_rgba(212,163,89,0.02)] backdrop-blur-xl transition-all duration-500 hover:border-gold-400/20">
 
       {/* Top Border Highlight */}
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gold-400/20 to-transparent rounded-t-[2.5rem]" />
       <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-400/5 blur-3xl" />
       <div className="pointer-events-none absolute -left-10 -bottom-10 h-40 w-40 rounded-full bg-gold-300/5 blur-3xl" />
 
-      <div className="relative mx-auto mb-6 h-20 w-20 overflow-hidden rounded-full border border-gold-400/20 bg-ink p-2 shadow-2xl">
+      <div className="relative mx-auto mb-4 h-14 w-14 overflow-hidden rounded-full border border-gold-400/20 bg-ink p-1.5 shadow-2xl">
         <Image
           src="/logo.png"
           alt="Amairah Perfumes"
-          width={80}
-          height={80}
+          width={56}
+          height={56}
           className="h-full w-full object-contain"
         />
       </div>
@@ -39,10 +39,10 @@ export default function LoginForm() {
       <span className="eyebrow relative flex justify-center text-[11px] font-semibold uppercase tracking-widest text-gold-300">
         Welcome Back
       </span>
-      <h1 className="relative mt-3 text-center font-display text-3xl sm:text-4xl text-ivory font-light">Log In to Amairah</h1>
-      <p className="relative mt-3 text-center text-base text-ivory/50 font-light">Track orders, save favorites, and checkout faster.</p>
+      <h1 className="relative mt-2 text-center font-display text-2xl sm:text-3xl text-ivory font-light">Log In to Amairah</h1>
+      <p className="relative mt-2 text-center text-sm text-ivory/50 font-light">Track orders, save favorites, and checkout faster.</p>
 
-      <form action={formAction} className="relative mt-9 space-y-4">
+      <form action={formAction} className="relative mt-5 space-y-3">
         <input type="hidden" name="redirect_to" value={redirectTo} />
         {state.error && (
           <div className="flex items-center gap-2 rounded-2xl border border-red-500/25 bg-red-500/10 p-4 text-sm text-red-300 animate-fadeUp">
@@ -96,7 +96,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={pending}
-          className="btn-gold group w-full py-4 text-sm font-semibold tracking-widest uppercase transition-all duration-500 disabled:opacity-60 shadow-[0_4px_20px_rgba(212,163,89,0.12)] hover:shadow-[0_4px_25px_rgba(212,163,89,0.25)] hover:-translate-y-0.5"
+          className="btn-gold group w-full py-3.5 text-sm font-semibold tracking-widest uppercase transition-all duration-500 disabled:opacity-60 shadow-[0_4px_20px_rgba(212,163,89,0.12)] hover:shadow-[0_4px_25px_rgba(212,163,89,0.25)] hover:-translate-y-0.5"
         >
           {pending ? (
             <span className="inline-flex items-center gap-2">
@@ -112,7 +112,7 @@ export default function LoginForm() {
         </button>
       </form>
 
-      <div className="relative my-7 flex items-center">
+      <div className="relative my-4 flex items-center">
         <div className="h-px flex-1 bg-ink-line" />
         <span className="px-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-ivory/30">
           Or
@@ -122,7 +122,7 @@ export default function LoginForm() {
 
       <GoogleAuthButton redirectTo={redirectTo} label="Continue with Google" />
 
-      <p className="relative mt-7 text-center text-base text-ivory/50 font-light">
+      <p className="relative mt-5 text-center text-sm text-ivory/50 font-light">
         New to Amairah?{" "}
         <Link 
           href={`/register?redirect=${encodeURIComponent(redirectTo)}`} 

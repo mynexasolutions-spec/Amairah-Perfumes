@@ -2,10 +2,10 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Lock, Eye, EyeOff, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { resetPassword } from "@/actions/auth";
-import BottleGlyph from "@/components/BottleGlyph";
 
 const inputClass =
   "w-full rounded-2xl border border-gold-400/10 bg-ink/40 py-4 pl-12 pr-4 text-base text-ivory placeholder:text-ivory/20 transition-all duration-500 focus:border-gold-300/50 focus:bg-ink/70 focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/20";
@@ -24,8 +24,14 @@ export default function ResetPasswordForm() {
       <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-400/5 blur-3xl" />
       <div className="pointer-events-none absolute -left-10 -bottom-10 h-40 w-40 rounded-full bg-gold-300/5 blur-3xl" />
 
-      <div className="relative mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-gold-400/20 bg-gold-400/5 shadow-[0_0_25px_rgba(212,163,89,0.12)]">
-        <BottleGlyph className="h-7 w-7 text-gold-300/80" />
+      <div className="relative mx-auto mb-6 h-20 w-20 overflow-hidden rounded-full border border-gold-400/20 bg-ink p-2 shadow-2xl">
+        <Image
+          src="/logo.png"
+          alt="Amairah Perfumes"
+          width={80}
+          height={80}
+          className="h-full w-full object-contain"
+        />
       </div>
 
       {state.success ? (

@@ -38,7 +38,7 @@ const NAV_GROUPS = [
     items: [
       { label: "Categories", href: "/admin/categories", icon: FolderTree },
       { label: "Products", href: "/admin/products", icon: Package },
-      { label: "Bundle Builder", href: "/admin/bundle", icon: PackagePlus },
+      { label: "Gift Set Builder", href: "/admin/bundle", icon: PackagePlus },
     ],
   },
   {
@@ -83,7 +83,6 @@ export default function AdminSidebar({ adminName = "Admin" }) {
     getSidebarBadgeCounts().then((counts) => {
       if (cancelled) return;
       setBadges({
-        "/admin/orders": counts.pendingOrders,
         "/admin/reviews": counts.pendingReviewCount,
         "/admin/inquiries": counts.unresolvedInquiryCount,
       });

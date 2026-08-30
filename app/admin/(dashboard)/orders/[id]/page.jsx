@@ -87,7 +87,13 @@ export default async function AdminOrderDetailPage({ params }) {
                   <span>-₹{Number(order.coupon_discount).toLocaleString("en-IN")}</span>
                 </div>
               )}
-              {order.quantity_discount === 0 && order.coupon_discount === 0 && order.discount_amount > 0 && (
+              {order.bundle_discount > 0 && (
+                <div className="flex justify-between text-green-400">
+                  <span>Bundle Discount</span>
+                  <span>-₹{Number(order.bundle_discount).toLocaleString("en-IN")}</span>
+                </div>
+              )}
+              {order.quantity_discount === 0 && order.coupon_discount === 0 && order.bundle_discount === 0 && order.discount_amount > 0 && (
                 <div className="flex justify-between text-green-400">
                   <span>Discount{order.coupon_code ? ` (${order.coupon_code})` : ""}</span>
                   <span>-₹{Number(order.discount_amount).toLocaleString("en-IN")}</span>

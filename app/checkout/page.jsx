@@ -5,16 +5,18 @@ import CheckoutForm from "./_components/CheckoutForm";
 import { isRazorpayEnabled } from "@/actions/checkout";
 import { getShippingSettings } from "@/actions/admin/shipping";
 import { getQuantityDiscountSettings } from "@/actions/admin/quantityDiscount";
+import { getBundleSettings } from "@/actions/bundle";
 import { isCodEnabled, isOnlinePaymentEnabled } from "@/actions/settings";
 import { ShieldCheck } from "lucide-react";
 
 export const metadata = { title: "Checkout" };
 
 export default async function CheckoutPage() {
-  const [razorpayConfigured, shipping, quantityDiscount, codEnabled, onlinePaymentEnabled] = await Promise.all([
+  const [razorpayConfigured, shipping, quantityDiscount, bundleSettings, codEnabled, onlinePaymentEnabled] = await Promise.all([
     isRazorpayEnabled(),
     getShippingSettings(),
     getQuantityDiscountSettings(),
+    getBundleSettings(),
     isCodEnabled(),
     isOnlinePaymentEnabled(),
   ]);
@@ -52,6 +54,7 @@ export default async function CheckoutPage() {
               razorpayEnabled={razorpayConfigured && onlinePaymentEnabled}
               shipping={shipping}
               quantityDiscount={quantityDiscount}
+              bundleSettings={bundleSettings}
             />
           </Reveal>
         </div>

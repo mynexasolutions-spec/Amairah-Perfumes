@@ -154,7 +154,7 @@ function withDisplayPrice(product) {
 export async function getProducts(filters = {}) {
   try {
     const supabase = createPublicClient();
-    let query = supabase.from("products").select(LISTING_SELECT).eq("is_active", true);
+    let query = supabase.from("products").select(LISTING_SELECT).eq("is_active", true).eq("show_in_shop", true);
 
     if (filters.categoryId) query = query.eq("category_id", filters.categoryId);
     if (filters.gender) query = query.eq("gender", filters.gender);
@@ -194,6 +194,7 @@ export async function getFeaturedProducts(limit = 4) {
       .from("products")
       .select(LISTING_SELECT)
       .eq("is_active", true)
+      .eq("show_in_shop", true)
       .eq("is_featured", true)
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -216,6 +217,7 @@ export async function getRelatedProducts(categoryId, excludeId, limit = 4) {
         .from("products")
         .select(LISTING_SELECT)
         .eq("is_active", true)
+        .eq("show_in_shop", true)
         .eq("category_id", categoryId)
         .neq("id", excludeId)
         .limit(limit);
@@ -229,6 +231,7 @@ export async function getRelatedProducts(categoryId, excludeId, limit = 4) {
         .from("products")
         .select(LISTING_SELECT)
         .eq("is_active", true)
+        .eq("show_in_shop", true)
         .neq("id", excludeId)
         .order("created_at", { ascending: false })
         .limit(limit);

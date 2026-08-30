@@ -27,7 +27,7 @@ export default async function OrderDetailPage({ params }) {
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "id, order_number, subtotal, shipping_cost, discount_amount, coupon_discount, quantity_discount, coupon_code, total_amount, payment_method, payment_status, order_status, created_at, razorpay_payment_id, tracking_number, courier_name, shipment_status, tracking_url, order_items ( id, product_name, variant_name, quantity, line_total ), addresses ( full_name, phone, address_line_1, address_line_2, city, state, postal_code )"
+      "id, order_number, subtotal, shipping_cost, discount_amount, coupon_discount, quantity_discount, bundle_discount, coupon_code, total_amount, payment_method, payment_status, order_status, created_at, razorpay_payment_id, tracking_number, courier_name, shipment_status, tracking_url, order_items ( id, product_name, variant_name, quantity, line_total ), addresses ( full_name, phone, address_line_1, address_line_2, city, state, postal_code )"
     )
     .eq("id", id)
     .eq("user_id", user.id)
@@ -124,7 +124,13 @@ export default async function OrderDetailPage({ params }) {
                     <span>-₹{Number(order.coupon_discount).toLocaleString("en-IN")}</span>
                   </div>
                 )}
-                {order.quantity_discount === 0 && order.coupon_discount === 0 && order.discount_amount > 0 && (
+                {order.bundle_discount > 0 && (
+                  <div className="flex justify-between text-green-400">
+                    <span>Bundle Discount</span>
+                    <span>-₹{Number(order.bundle_discount).toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+                {order.quantity_discount === 0 && order.coupon_discount === 0 && order.bundle_discount === 0 && order.discount_amount > 0 && (
                   <div className="flex justify-between text-green-400">
                     <span>Discount{order.coupon_code ? ` (${order.coupon_code})` : ""}</span>
                     <span>-₹{Number(order.discount_amount).toLocaleString("en-IN")}</span>

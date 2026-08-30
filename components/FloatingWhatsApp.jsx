@@ -6,7 +6,7 @@ import { whatsappLink } from "@/lib/constants";
 
 export default function FloatingWhatsApp() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) return null;
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/bundle")) return null;
 
   return (
     <a

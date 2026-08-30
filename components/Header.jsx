@@ -42,7 +42,7 @@ export default function Header({ categories = [], announcement, isLoggedIn = fal
   const router = useRouter();
 
   const navLinks = bundleEnabled
-    ? [...STATIC_LINKS.slice(0, 2), { label: "Build a Bundle", href: "/bundle" }, ...STATIC_LINKS.slice(2)]
+    ? [...STATIC_LINKS.slice(0, 2), { label: "Gift Set", href: "/bundle" }, ...STATIC_LINKS.slice(2)]
     : STATIC_LINKS;
 
   const handleSearch = (e) => {

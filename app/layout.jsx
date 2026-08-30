@@ -6,6 +6,7 @@ import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import CartDrawer from "@/components/CartDrawer";
 import { BRAND } from "@/lib/constants";
 import { getQuantityDiscountSettings } from "@/actions/admin/quantityDiscount";
+import { getBundleSettings } from "@/actions/bundle";
 import Script from "next/script";
 
 const display = Plus_Jakarta_Sans({
@@ -37,7 +38,7 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-  const quantityDiscount = await getQuantityDiscountSettings();
+  const [quantityDiscount, bundleSettings] = await Promise.all([getQuantityDiscountSettings(), getBundleSettings()]);
 
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`} suppressHydrationWarning>
@@ -60,7 +61,7 @@ export default async function RootLayout({ children }) {
         <ToastProvider>
           <CartProvider>
             {children}
-            <CartDrawer quantityDiscount={quantityDiscount} />
+            <CartDrawer quantityDiscount={quantityDiscount} bundleSettings={bundleSettings} />
             <FloatingWhatsApp />
           </CartProvider>
         </ToastProvider>

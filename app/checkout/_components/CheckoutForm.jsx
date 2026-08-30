@@ -8,13 +8,13 @@ import { Banknote, CreditCard, CheckCircle2, Minus, Plus } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import { processCheckout, verifyRazorpayPayment, validateCoupon } from "@/actions/checkout";
-import { calculateQuantityDiscount } from "@/lib/constants";
+import { calculateQuantityDiscount, calculateBundleDiscount } from "@/lib/constants";
 
 const inputClass =
   "w-full rounded-2xl border border-gold-400/10 bg-ink/40 px-5 py-4 text-base text-ivory placeholder:text-ivory/20 transition-all duration-500 focus:border-gold-300/50 focus:bg-ink/70 focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/20";
 const labelClass = "mb-2 block text-xs font-semibold uppercase tracking-widest text-gold-300/85";
 
-export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, quantityDiscount }) {
+export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, quantityDiscount, bundleSettings }) {
   const { cart, cartSubtotal, cartCount, clearCart, updateQuantity } = useCart();
   const { showToast } = useToast();
 
@@ -39,7 +39,8 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
   const codCost = paymentMethod === "COD" ? shipping.cod_charge : 0;
   const couponDiscount = appliedCoupon?.discountAmount || 0;
   const qtyDiscount = calculateQuantityDiscount(cartCount, quantityDiscount);
-  const total = Math.max(0, cartSubtotal + shippingCost + codCost - couponDiscount - qtyDiscount);
+  const bundleDiscount = calculateBundleDiscount(cart, bundleSettings);
+  const total = Math.max(0, cartSubtotal + shippingCost + codCost - couponDiscount - qtyDiscount - bundleDiscount);
 
   const handleApplyCoupon = async () => {
     if (!couponInput) return;
@@ -95,6 +96,7 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
       variantName: i.variantName,
       price: i.price,
       quantity: i.quantity,
+      bundleGroupId: i.bundleGroupId,
     }));
 
   const handleSubmit = async (e) => {
@@ -453,6 +455,12 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
               <div className="flex justify-between text-green-400 font-light">
                 <span>Bulk Discount ({cartCount} items)</span>
                 <span className="font-medium">-₹{qtyDiscount.toLocaleString("en-IN")}</span>
+              </div>
+            )}
+            {bundleDiscount > 0 && (
+              <div className="flex justify-between text-green-400 font-light">
+                <span>Bundle Discount</span>
+                <span className="font-medium">-₹{bundleDiscount.toLocaleString("en-IN")}</span>
               </div>
             )}
             {couponDiscount > 0 && (

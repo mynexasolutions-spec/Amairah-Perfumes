@@ -18,6 +18,7 @@ export async function getAllProductsAdmin() {
   const { data } = await supabase
     .from("products")
     .select("id, name, slug, is_active, is_featured, featured_image_url, categories ( name ), product_variants ( price, stock_quantity )")
+    .eq("show_in_shop", true)
     .order("created_at", { ascending: false });
 
   return (data || []).map((p) => ({

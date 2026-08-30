@@ -5,11 +5,12 @@ import Link from "next/link";
 import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import BottleGlyph from "@/components/BottleGlyph";
-import { calculateQuantityDiscount } from "@/lib/constants";
+import { calculateQuantityDiscount, calculateBundleDiscount } from "@/lib/constants";
 
-export default function CartDrawer({ quantityDiscount }) {
+export default function CartDrawer({ quantityDiscount, bundleSettings }) {
   const { cart, drawerOpen, setDrawerOpen, updateQuantity, removeFromCart, cartSubtotal, cartCount } = useCart();
   const qtyDiscount = calculateQuantityDiscount(cartCount, quantityDiscount);
+  const bundleDiscount = calculateBundleDiscount(cart, bundleSettings);
 
   return (
     <>
@@ -103,7 +104,7 @@ export default function CartDrawer({ quantityDiscount }) {
                         </button>
                       </div>
                       {item.variantName && (
-                        <span className="inline-block text-[10px] uppercase tracking-wider text-gold-400/60 font-semibold mt-1">
+                        <span className="inline-block text-xs uppercase tracking-wider text-gold-400/60 font-semibold mt-1">
                           {item.variantName}
                         </span>
                       )}
@@ -158,7 +159,13 @@ export default function CartDrawer({ quantityDiscount }) {
                 <span className="text-sm font-semibold text-green-400">-₹{qtyDiscount.toLocaleString("en-IN")}</span>
               </div>
             )}
-            <p className="text-[11px] text-ivory/40 leading-normal">
+            {bundleDiscount > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-xs uppercase tracking-widest text-green-400">Bundle Discount</span>
+                <span className="text-sm font-semibold text-green-400">-₹{bundleDiscount.toLocaleString("en-IN")}</span>
+              </div>
+            )}
+            <p className="text-xs text-ivory/40 leading-normal">
               Shipping and COD fees calculated at checkout. Free shipping available on select orders.
             </p>
             <Link
