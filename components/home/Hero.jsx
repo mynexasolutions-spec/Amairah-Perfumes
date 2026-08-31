@@ -33,7 +33,6 @@ export default function Hero({
 }) {
   const activeSlides = slides.length > 0 ? slides : DEFAULT_SLIDES;
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [animating, setAnimating] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -43,21 +42,11 @@ export default function Hero({
   }, [currentIndex, activeSlides.length]);
 
   const handleNext = () => {
-    if (animating) return;
-    setAnimating(true);
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % activeSlides.length);
-      setAnimating(false);
-    }, 500); // Match CSS transition duration
+    setCurrentIndex((prev) => (prev + 1) % activeSlides.length);
   };
 
   const handlePrev = () => {
-    if (animating) return;
-    setAnimating(true);
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
-      setAnimating(false);
-    }, 500);
+    setCurrentIndex((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
   };
 
   const currentSlide = activeSlides[currentIndex];
@@ -75,12 +64,7 @@ export default function Hero({
   const showSocialProof = showRatingRow || hasShipped;
 
   const goToSlide = (idx) => {
-    if (animating) return;
-    setAnimating(true);
-    setTimeout(() => {
-      setCurrentIndex(idx);
-      setAnimating(false);
-    }, 500);
+    setCurrentIndex(idx);
   };
 
   // Text overlaid on the background image — sized down aggressively on mobile so it fits over a 16:9 crop
@@ -194,9 +178,7 @@ export default function Hero({
             alt="Amairah Perfumes background"
             fill
             priority
-            className={`object-cover transition-all duration-700 ease-in-out ${
-              animating ? "opacity-0 scale-105" : "opacity-100 scale-100"
-            }`}
+            className="object-cover"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-ink-gradient opacity-30">
@@ -227,9 +209,7 @@ export default function Hero({
 
       <div className="pointer-events-none relative mx-auto max-w-wrap px-4 sm:px-6 md:px-12 w-full z-20">
         {/* Content Container (Left-aligned overlay) */}
-        <div className={`max-w-2xl flex flex-col justify-center animate-fadeUp transition-all duration-500 ease-in-out ${
-          animating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
-        }`}>
+        <div className="max-w-2xl flex flex-col justify-center animate-fadeUp">
           {heroText}
         </div>
       </div>

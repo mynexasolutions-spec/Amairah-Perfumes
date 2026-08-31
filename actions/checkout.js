@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { SHIPPING_DEFAULTS, calculateQuantityDiscount, calculateBundleDiscount } from "@/lib/constants";
+import { SHIPPING_DEFAULTS, calculateQuantityDiscount, calculateBundleDiscount, nonBundleCartQuantity } from "@/lib/constants";
 import { isCodEnabled, isOnlinePaymentEnabled } from "@/actions/settings";
 import { getQuantityDiscountSettings } from "@/actions/admin/quantityDiscount";
 import { getBundleSettings } from "@/actions/bundle";
@@ -131,9 +131,8 @@ export async function processCheckout(addressInput, items, paymentMethod, coupon
 
   // Automatic discount based on total cart quantity — always recomputed
   // server-side from the live rules, independent of any coupon code.
-  const totalQuantity = items.reduce((sum, i) => sum + i.quantity, 0);
   const [quantityDiscountSettings, bundleSettings] = await Promise.all([getQuantityDiscountSettings(), getBundleSettings()]);
-  const quantityDiscount = calculateQuantityDiscount(totalQuantity, quantityDiscountSettings);
+  const quantityDiscount = calculateQuantityDiscount(nonBundleCartQuantity(items), quantityDiscountSettings);
   const bundleDiscount = calculateBundleDiscount(items, bundleSettings);
 
   const discountAmount = couponDiscount + quantityDiscount + bundleDiscount;

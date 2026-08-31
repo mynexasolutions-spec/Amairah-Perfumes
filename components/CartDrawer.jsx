@@ -5,11 +5,11 @@ import Link from "next/link";
 import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import BottleGlyph from "@/components/BottleGlyph";
-import { calculateQuantityDiscount, calculateBundleDiscount } from "@/lib/constants";
+import { calculateQuantityDiscount, calculateBundleDiscount, nonBundleCartQuantity } from "@/lib/constants";
 
 export default function CartDrawer({ quantityDiscount, bundleSettings }) {
   const { cart, drawerOpen, setDrawerOpen, updateQuantity, removeFromCart, cartSubtotal, cartCount } = useCart();
-  const qtyDiscount = calculateQuantityDiscount(cartCount, quantityDiscount);
+  const qtyDiscount = calculateQuantityDiscount(nonBundleCartQuantity(cart), quantityDiscount);
   const bundleDiscount = calculateBundleDiscount(cart, bundleSettings);
 
   return (

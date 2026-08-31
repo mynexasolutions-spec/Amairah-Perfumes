@@ -8,7 +8,7 @@ import { Banknote, CreditCard, CheckCircle2, Minus, Plus } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import { processCheckout, verifyRazorpayPayment, validateCoupon } from "@/actions/checkout";
-import { calculateQuantityDiscount, calculateBundleDiscount } from "@/lib/constants";
+import { calculateQuantityDiscount, calculateBundleDiscount, nonBundleCartQuantity } from "@/lib/constants";
 
 const inputClass =
   "w-full rounded-2xl border border-gold-400/10 bg-ink/40 px-5 py-4 text-base text-ivory placeholder:text-ivory/20 transition-all duration-500 focus:border-gold-300/50 focus:bg-ink/70 focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/20";
@@ -38,7 +38,8 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
   const shippingCost = cartSubtotal >= shipping.free_threshold ? 0 : shipping.flat_rate;
   const codCost = paymentMethod === "COD" ? shipping.cod_charge : 0;
   const couponDiscount = appliedCoupon?.discountAmount || 0;
-  const qtyDiscount = calculateQuantityDiscount(cartCount, quantityDiscount);
+  const nonBundleQty = nonBundleCartQuantity(cart);
+  const qtyDiscount = calculateQuantityDiscount(nonBundleQty, quantityDiscount);
   const bundleDiscount = calculateBundleDiscount(cart, bundleSettings);
   const total = Math.max(0, cartSubtotal + shippingCost + codCost - couponDiscount - qtyDiscount - bundleDiscount);
 
@@ -453,7 +454,7 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
             )}
             {qtyDiscount > 0 && (
               <div className="flex justify-between text-green-400 font-light">
-                <span>Bulk Discount ({cartCount} items)</span>
+                <span>Bulk Discount ({nonBundleQty} items)</span>
                 <span className="font-medium">-₹{qtyDiscount.toLocaleString("en-IN")}</span>
               </div>
             )}

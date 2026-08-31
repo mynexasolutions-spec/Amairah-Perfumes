@@ -4,11 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { calculateQuantityDiscount, calculateBundleDiscount } from "@/lib/constants";
+import { calculateQuantityDiscount, calculateBundleDiscount, nonBundleCartQuantity } from "@/lib/constants";
 
 export default function CartView({ quantityDiscount, bundleSettings }) {
   const { cart, updateQuantity, removeFromCart, cartSubtotal, cartCount } = useCart();
-  const qtyDiscount = calculateQuantityDiscount(cartCount, quantityDiscount);
+  const nonBundleQty = nonBundleCartQuantity(cart);
+  const qtyDiscount = calculateQuantityDiscount(nonBundleQty, quantityDiscount);
   const bundleDiscount = calculateBundleDiscount(cart, bundleSettings);
 
   if (cart.length === 0) {
@@ -75,7 +76,7 @@ export default function CartView({ quantityDiscount, bundleSettings }) {
       </div>
       {qtyDiscount > 0 && (
         <div className="mt-2 flex items-center justify-between">
-          <span className="text-green-400 text-sm">Bulk Discount ({cartCount} items)</span>
+          <span className="text-green-400 text-sm">Bulk Discount ({nonBundleQty} items)</span>
           <span className="font-semibold text-green-400">-₹{qtyDiscount.toLocaleString("en-IN")}</span>
         </div>
       )}
